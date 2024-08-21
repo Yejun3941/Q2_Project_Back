@@ -1,0 +1,16 @@
+{
+  "name": "q2_project_back",
+  "version": "1.0.0",
+  "description": "##  - nodejs : 20.15.1 -",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./app.js"
+  },
+  "author": "yeyey, sol",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "nodemon": "^3.1.4"
+  }
+}
