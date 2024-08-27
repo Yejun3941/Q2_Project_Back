@@ -19,8 +19,8 @@ class FavoritSpot extends Sequelize.Model {
   }
 
   static associate(db) {
-    db.FavoritSpot.belongsTo(db.User, { foreignKey: "F_user_id" });
-    db.FavoritSpot.belongsTo(db.Spot, { foreignKey: "F_spot_id" });
+    db.FavoritSpot.belongsTo(db.User, { foreignKey: "F_User_id" });
+    db.FavoritSpot.belongsTo(db.Spot, { foreignKey: "F_Spot_id" });
   }
 }
 

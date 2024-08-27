@@ -19,8 +19,8 @@ class FavoritCourse extends Sequelize.Model {
   }
 
   static associate(db) {
-    db.FavoritCourse.belongsTo(db.User, { foreignKey: "F_user_id" });
-    db.FavoritCourse.belongsTo(db.Course, { foreignKey: "F_course_id" });
+    db.FavoritCourse.belongsTo(db.User, { foreignKey: "F_User_id" });
+    db.FavoritCourse.belongsTo(db.Course, { foreignKey: "F_Course_id" });
   }
 }
 

@@ -15,8 +15,8 @@ class Link extends Sequelize.Model {
   }
 
   static associate(db) {
-    db.Link.belongsTo(db.Course, { foreignKey: "F_course_id" });
-    db.Link.belongsTo(db.Spot, { foreignKey: "F_spot_id" });
+    db.Link.belongsTo(db.Course, { foreignKey: "F_Course_id" });
+    db.Link.belongsTo(db.Spot, { foreignKey: "F_Spot_id" });
   }
 }
 
