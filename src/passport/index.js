@@ -3,6 +3,8 @@ const kakao = require("./kakaoStrategy");
 const naver = require("./naverStrategy");
 const User = require("../models/user");
 
+module.exports = passport;
+
 module.exports = () => {
   passport.serializeUser((user, done) => {
     console.log("serialize");
@@ -13,18 +15,18 @@ module.exports = () => {
     console.log("deserialize");
     User.findOne({
       where: { id },
-      include: [
-        {
-          model: User,
-          attributes: ["id", "nick"],
-          as: "Followers",
-        },
-        {
-          model: User,
-          attributes: ["id", "nick"],
-          as: "Followings",
-        },
-      ],
+      // include: [
+      //   {
+      //     model: User,
+      //     attributes: ["id", "nick"],
+      //     as: "Followers",
+      //   },
+      //   {
+      //     model: User,
+      //     attributes: ["id", "nick"],
+      //     as: "Followings",
+      //   },
+      // ],
     })
       .then((user) => {
         console.log("user", user);

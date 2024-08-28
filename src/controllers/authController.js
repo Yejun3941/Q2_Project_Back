@@ -1,42 +1,72 @@
-// authController.js
+const bcrypt = require("bcrypt");
+const passport = require("passport");
+const User = require("../models");
 
-// 예시: 사용자 인증 컨트롤러
-
-// 사용자 로그인 처리
-const login = (req, res) => {
-    // 로그인 로직 구현
+exports.join = async (req, res, next) => {
+  const { email, nickname, password } = req.body;
+  console.log("authController");
+  console.log(nick);
+  try {
+    const exUser = await User.findOne({ where: { email } });
+    if (exUser) {
+      return res.redirect("/join?error=exist");
+    }
+    const hash = await bcrypt.hash(password, 12);
+    await User.create({
+      email,
+      nickname,
+      password: hash,
+    });
+    return res.redirect(`${process.env.FRONT}`);
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
 };
 
-// 사용자 회원가입 처리
-const signup = (req, res) => {
-    // 회원가입 로직 구현
+// exports.renderJoin = (req, res) => {
+//   res.render("join", { title: "회원가입 - MyApp" });
+// };
+
+exports.login = (req, res, next) => {
+  passport.authenticate("naver", (authError, user, info) => {
+    if (authError) {
+      console.error(authError);
+      return next(authError);
+    }
+    if (!user) {
+      return res.redirect(`/?error=${info.message}`);
+    }
+    return req.login(user, (loginError) => {
+      if (loginError) {
+        console.error(loginError);
+        return next(loginError);
+      }
+      return res.redirect(`${process.env.FRONT}`);
+    });
+  })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 };
 
-// 사용자 로그아웃 처리
-const logout = (req, res) => {
-    // 로그아웃 로직 구현
-};
-
-// 사용자 정보 가져오기
-const getUser = (req, res) => {
-    // 사용자 정보 조회 로직 구현
-};
-
-// 사용자 정보 업데이트
-const updateUser = (req, res) => {
-    // 사용자 정보 업데이트 로직 구현
-};
-
-// 사용자 삭제
-const deleteUser = (req, res) => {
-    // 사용자 삭제 로직 구현
-};
-
-module.exports = {
-    login,
-    signup,
-    logout,
-    getUser,
-    updateUser,
-    deleteUser,
+exports.logout = (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.error(err);
+      return next(err); // 에러가 발생하면 이를 처리할 수 있도록 합니다.
+    }
+    console.log("Before destroying session:", req.session);
+    req.session.destroy((err) => {
+      if (err) {
+        console.error(err);
+        return next(err);
+      }
+      console.log("Session destroyed");
+      res.clearCookie("connect.sid", {
+        httpOnly: true,
+        secure: false,
+        maxAge: now(),
+      }); // 세션 쿠키 삭제
+      res.redirect("/"); // 로그아웃 후 리다이렉트
+      console.log("Logging out...");
+    });
+  });
 };
