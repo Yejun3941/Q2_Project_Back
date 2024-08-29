@@ -5,7 +5,7 @@ const User = require("../models");
 exports.join = async (req, res, next) => {
   const { email, nickname, password } = req.body;
   console.log("authController");
-  console.log(nick);
+  console.log(nickname);
   try {
     const exUser = await User.findOne({ where: { email } });
     if (exUser) {
@@ -17,16 +17,12 @@ exports.join = async (req, res, next) => {
       nickname,
       password: hash,
     });
-    return res.redirect(`${process.env.FRONT}`);
+    return res.redirect(`${process.env.FRONTEND}`);
   } catch (error) {
     console.error(error);
     return next(error);
   }
 };
-
-// exports.renderJoin = (req, res) => {
-//   res.render("join", { title: "회원가입 - MyApp" });
-// };
 
 exports.login = (req, res, next) => {
   passport.authenticate("naver", (authError, user, info) => {
@@ -42,31 +38,32 @@ exports.login = (req, res, next) => {
         console.error(loginError);
         return next(loginError);
       }
-      return res.redirect(`${process.env.FRONT}`);
+      // return res.redirect("localhost");
+      return res.redirect(`${process.env.FRONTEND}`);
     });
   })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 };
 
-exports.logout = (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      console.error(err);
-      return next(err); // 에러가 발생하면 이를 처리할 수 있도록 합니다.
-    }
-    console.log("Before destroying session:", req.session);
-    req.session.destroy((err) => {
-      if (err) {
-        console.error(err);
-        return next(err);
-      }
-      console.log("Session destroyed");
-      res.clearCookie("connect.sid", {
-        httpOnly: true,
-        secure: false,
-        maxAge: now(),
-      }); // 세션 쿠키 삭제
-      res.redirect("/"); // 로그아웃 후 리다이렉트
-      console.log("Logging out...");
-    });
-  });
-};
+// exports.logout = (req, res) => {
+//   req.logout((err) => {
+//     if (err) {
+//       console.error(err);
+//       return next(err); // 에러가 발생하면 이를 처리할 수 있도록 합니다.
+//     }
+//     console.log("Before destroying session:", req.session);
+//     req.session.destroy((err) => {
+//       if (err) {
+//         console.error(err);
+//         return next(err);
+//       }
+//       console.log("Session destroyed");
+//       res.clearCookie("connect.sid", {
+//         httpOnly: true,
+//         secure: false,
+//         maxAge: now(),
+//       }); // 세션 쿠키 삭제
+//       res.redirect("/"); // 로그아웃 후 리다이렉트
+//       console.log("Logging out...");
+//     });
+//   });
+// };

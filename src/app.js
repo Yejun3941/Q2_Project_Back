@@ -52,7 +52,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // CORS 설정
-app.use(cors({ origin: `${process.env.FRONT}` }));
+app.use(cors({ origin: `${process.env.FRONTEND}` }));
 
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, "public")));
@@ -66,7 +66,7 @@ app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = process.env.NODE_ENV !== "production" ? err : {};
   res.status(err.status || 500);
-  res.redirect(`${process.env.FRONT}`);
+  res.redirect(`${process.env.FRONTEND}`);
 });
 
 // 서버 실행

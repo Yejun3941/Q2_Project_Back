@@ -2,14 +2,10 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const { join, login, logout } = require("../controllers/authController");
-const {
-  isLoggedIn,
-  isNotLoggedIn,
-  setLocals,
-} = require("../middlewares/authMiddleware");
+const { isLoggedIn, isNotLoggedIn } = require("../middlewares/authMiddleware");
 
 // 미들웨어: 로그인 상태에 따라 로컬 변수 설정
-router.use(setLocals);
+// router.use(setLocals);
 
 // 회원가입 라우트
 router.post("/join", isNotLoggedIn, join);
@@ -17,8 +13,8 @@ router.post("/join", isNotLoggedIn, join);
 // 로그인 라우트
 router.post("/login", isNotLoggedIn, login);
 
-// 로그아웃 라우트
-router.get("/logout", isLoggedIn, logout);
+// // 로그아웃 라우트
+// router.get("/logout", isLoggedIn, logout);
 
 // 카카오 로그인 라우트
 router.get(
@@ -34,7 +30,7 @@ router.get(
     failureRedirect: "/?loginError=카카오로그인 실패",
   }),
   (req, res) => {
-    res.redirect(`${process.env.BACKEND}`); // 성공 시에는 로컬로 이동
+    res.redirect(`${process.env.FRONTEND}`); // 성공 시에는 로컬로 이동
   }
 );
 
@@ -47,7 +43,9 @@ router.get(
     failureRedirect: "/?loginError=네이버로그인 실패",
   }),
   (req, res) => {
-    res.redirect(`${process.env.BACKEND}`); // 성공 시에는 /로 이동
+    console.log(`${process.env.FRONTEND}`);
+    // res.redirect(`${process.env.FRONTEND}`); // 성공 시에는 /로 이동
+    res.redirect(`${process.env.FRONTEND}`); // 성공 시에는 /로 이동
   }
 );
 
