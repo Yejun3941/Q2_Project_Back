@@ -11,6 +11,21 @@ const passportConfig = require("./passport");
 const routes = require("./routes/");
 const { sequelize } = require("./models");
 
+// AWS.config.update({ region: "ap-northeast-2" });
+// const AWS = require("aws-sdk");
+// const s3 = new AWS.S3();
+// const BUCKET_NAME = "team04-tmdedu-bucket";
+
+// const params = {
+//   Bucket: BUCKET_NAME,
+//   Key: "build/",
+// };
+
+// s3.getObject(params, function (err, data) {
+//   if (err) console.log(err, err.stack);
+//   else console.log(data.Body.toString("utf-8"));
+// });
+
 dotenv.config(); // dotenv 설정
 
 const app = express();

@@ -3,7 +3,11 @@ const router = express.Router();
 const passport = require("passport");
 const { join, login, logout } = require("../controllers/authController");
 const { isLoggedIn, isNotLoggedIn } = require("../middlewares/authMiddleware");
-
+// const {
+//   isLoggedIn,
+//   isNotLoggedIn,
+//   setLocals,
+// } = require("../middlewares/authMiddleware");
 // 미들웨어: 로그인 상태에 따라 로컬 변수 설정
 // router.use(setLocals);
 
