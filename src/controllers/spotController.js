@@ -1,11 +1,30 @@
-const { Spot } = require("../models"); // Spot 모델 불러오기. spot 단일 모델만 사용하는 경우여서, 따로 db 객체를 불러오지 않았음.
+const { Spot } = require("../models"); // Spot 모델 불러오기. spot 단일 모델만 사용하는 경우여서, 따로 db 객체를 불러오지 않았음
+const {
+  decode2queryData,
+  fermatIncode,
+  fermatDecode,
+} = require("../services/decodingService"); // base64 디코딩 서비스 불러오기
 
 // 모든 스팟 가져오기
-// GET /spots
+// GET /spots?data={category="카페"&location=1}
+// 스팟 가져오는 방식 : 전체 / 구역별 / 카테고리별 /
 exports.getAllSpots = async (req, res) => {
   try {
-    const spots = await Spot.findAll(); // 데이터베이스에서 모든 스팟을 조회
-    res.json(spots); // 조회된 스팟들을 JSON 형태로 응답
+    const { category, location } = decode2queryData(req.query.data); // URL 쿼리에서 카테고리와 구역 정보 추출
+    const whereCondition = {}; // 조회 조건을 담을 객체 생성
+    category ? (whereCondition.category = category) : null; // 카테고리 정보가 있을 경우 조회 조건에 추가
+    location ? (whereCondition.F_Spot_Location = fermatDecode(location)) : null; // 구역 정보가 있을 경우 조회 조건에 추가
+    const spots = await Spot.findAll({
+      where: {
+        ...whereCondition,
+      },
+    }); // 데이터베이스에서 category가 "리액트에서 받은 데이터"인 모든 스팟을 조회
+    modifiedSpots = spots.map((spot) => ({
+      ...spot.get(),
+      id: fermatIncode(spot.id),
+      F_Spot_Location: fermatIncode(spot.F_Spot_Location),
+    }));
+    res.json(modifiedSpots); // 조회된 스팟들을 JSON 형태로 응답
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch spots" }); // 에러 발생 시 500 상태 코드와 에러 메시지 반환
   }
@@ -16,11 +35,17 @@ exports.getAllSpots = async (req, res) => {
 exports.getSpotById = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 스팟 ID 추출
   try {
-    const spot = await Spot.findByPk(id); // 주어진 ID로 스팟 조회
+    modifiedId = fermatDecode(id);
+    const spot = await Spot.findByPk(modifiedId); // 주어진 ID로 스팟 조회
     if (!spot) {
       return res.status(404).json({ error: "Spot not found" }); // 스팟이 없을 경우 404 상태 코드 반환
     }
-    res.json(spot); // 조회된 스팟을 JSON 형태로 응답
+    modeifiedSpot = {
+      ...spot.get(),
+      id: fermatIncode(spot.id),
+      F_Spot_Location: fermatIncode(spot.F_Spot_Location),
+    };
+    res.json(modeifiedSpot); // 조회된 스팟을 JSON 형태로 응답
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch spot" }); // 에러 발생 시 500 상태 코드와 에러 메시지 반환
   }
@@ -31,6 +56,7 @@ exports.getSpotById = async (req, res) => {
 exports.createSpot = async (req, res) => {
   const { Lat, Lng, Spot_Name, F_Spot_Location, Category, Photo } = req.body; // 요청 바디에서 필요한 데이터 추출
   try {
+    F_Spot_Location = fermatDecode(F_Spot_Location);
     const newSpot = await Spot.create({
       Lat,
       Lng,
@@ -39,7 +65,12 @@ exports.createSpot = async (req, res) => {
       Category,
       Photo,
     }); // 새로운 스팟을 데이터베이스에 생성
-    res.status(201).json(newSpot); // 생성된 스팟을 JSON 형태로 응답
+    modifiedSpot = {
+      ...newSpot.get(),
+      id: fermatIncode(newSpot.id),
+      F_Spot_Location: fermatIncode(newSpot.F_Spot_Location),
+    };
+    res.status(201).json(modifiedSpot); // 생성된 스팟을 JSON 형태로 응답
   } catch (err) {
     res.status(500).json({ error: "Failed to create spot" }); // 에러 발생 시 500 상태 코드와 에러 메시지 반환
   }
@@ -51,7 +82,10 @@ exports.updateSpot = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 스팟 ID 추출
   const { Lat, Lng, Spot_Name, F_Spot_Location, Category, Photo } = req.body; // 요청 바디에서 업데이트할 데이터 추출
   try {
-    const spot = await Spot.findByPk(id); // 주어진 ID로 스팟 조회
+    modifiedId = fermatDecode(id);
+    F_Spot_Location = fermatDecode(F_Spot_Location); // User 는 변경이 없음
+
+    const spot = await Spot.findByPk(modifiedId); // 주어진 ID로 스팟 조회
     if (!spot) {
       return res.status(404).json({ error: "Spot not found" }); // 스팟이 없을 경우 404 상태 코드 반환
     }
@@ -65,7 +99,13 @@ exports.updateSpot = async (req, res) => {
     spot.Photo = Photo || spot.Photo;
 
     await spot.save(); // 변경된 내용을 데이터베이스에 저장
-    res.json(spot); // 업데이트된 스팟을 JSON 형태로 응답
+
+    modifiedSpot = {
+      ...spot.get(),
+      id: fermatIncode(spot.id),
+      F_Spot_Location: fermatIncode(spot.F_Spot_Location),
+    };
+    res.json(modifiedSpot); // 업데이트된 스팟을 JSON 형태로 응답
   } catch (err) {
     res.status(500).json({ error: "Failed to update spot" }); // 에러 발생 시 500 상태 코드와 에러 메시지 반환
   }
@@ -76,7 +116,8 @@ exports.updateSpot = async (req, res) => {
 exports.deleteSpot = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 스팟 ID 추출
   try {
-    const spot = await Spot.findByPk(id); // 주어진 ID로 스팟 조회
+    modifiedId = fermatDecode(id);
+    const spot = await Spot.findByPk(modifiedId); // 주어진 ID로 스팟 조회
     if (!spot) {
       return res.status(404).json({ error: "Spot not found" }); // 스팟이 없을 경우 404 상태 코드 반환
     }

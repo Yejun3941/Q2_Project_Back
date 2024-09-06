@@ -1,4 +1,12 @@
-# Q2 Project
+# DatePeek
+
+## Front : https://github.com/sooooooool/q2_project_front 
+
+## 개발 목적
+- 데이트를 할 때, 어디를 가야할까? 남들은 어떻게 데이트를 할까? 내 데이트 코스 어떻게 짜야 성공적인 데이트를 할수 있을까? 라는 생각에서 시작된 데이트 코스 공유 및 제공
+
+## 용도
+
 
 ## Project Folder Architecture
 ```md
