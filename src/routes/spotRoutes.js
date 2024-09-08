@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const spotController = require("../controllers/spotController");
+const spotController = require("../controllers/linkController");
 
 // 모든 스팟 가져오기
 router.get("/", spotController.getAllSpots);
