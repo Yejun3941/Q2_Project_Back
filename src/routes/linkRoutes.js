@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const spotController = require("../controllers/spotController");
+const linkController = require("../controllers/linkController");
 
 // 링크 가져오기
 router.get("/", linkController.getAllLinks);
 
 // 특정 링크 가져오기 (ID로 조회)
-router.get("/:id", linkController.getLinkById);
+// router.get("/:id", linkController.getLinkById);
 
 // 새 링크 생성하기
 router.post("/", linkController.createLink);
