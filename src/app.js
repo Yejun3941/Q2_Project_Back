@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const path = require("path");
 const passport = require("passport");
 const session = require("express-session");
+const bodyParser = require("body-parser");
 
 const passportConfig = require("./passport");
 const routes = require("./routes/");
@@ -72,6 +73,8 @@ app.use(cors({ origin: `${process.env.FRONTEND}` }));
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/img", express.static(path.join(__dirname, "uploads")));
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "../build")));
 
 // 라우터 연결
 app.use("/", routes);

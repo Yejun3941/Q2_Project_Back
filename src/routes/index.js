@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const Path = require("path");
 const authRoutes = require("./authRoutes"); // authRoutes.js를 불러옴
 const courseRoutes = require("./courseRoutes");
 const spotRoutes = require("./spotRoutes");
@@ -9,14 +10,18 @@ const link = require("./linkRoutes");
 
 router.use("/auth", authRoutes); // /auth 경로에서 authRoutes 사용
 
-router.use("/course", courseRoutes);
+router.use("/course-api", courseRoutes);
 
-router.use("/spot", spotRoutes);
+router.use("/spot-api", spotRoutes);
 
-router.use("/comment", commentRoutes);
+router.use("/comment-api", commentRoutes);
 
-router.use("/user", user);
+router.use("/user-api", user);
 
-router.use("/link", link);
+router.use("/link-api", link);
+
+router.get("*", (req, res) => {
+  res.sendFile(Path.join(__dirname, "../../build", "index.html"));
+});
 
 module.exports = router;

@@ -34,7 +34,7 @@ router.get(
     failureRedirect: "/?loginError=카카오로그인 실패",
   }),
   (req, res) => {
-    res.redirect(`${process.env.FRONTEND}`); // 성공 시에는 로컬로 이동
+    res.redirect(`${process.env.BACKEND}/course`); // 성공 시에는 로컬로 이동
   }
 );
 
@@ -47,9 +47,9 @@ router.get(
     failureRedirect: "/?loginError=네이버로그인 실패",
   }),
   (req, res) => {
-    console.log(`${process.env.FRONTEND}`);
+    console.log(`${process.env.BACKEND}/course`);
     // res.redirect(`${process.env.FRONTEND}`); // 성공 시에는 /로 이동
-    res.redirect(`${process.env.FRONTEND}`); // 성공 시에는 /로 이동
+    res.redirect(`${process.env.BACKEND}/course`); // 성공 시에는 /로 이동
   }
 );
 
