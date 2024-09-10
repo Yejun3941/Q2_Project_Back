@@ -7,10 +7,10 @@ const {
 } = require("../services/decodingService"); // base64 디코딩 서비스 불러오기
 
 // 모든 코스 가져오기
-// GET /course?data={sortBy=starPoint&loc=1&user=1}
+// GET /course?data={sortBy=starPoint&loc=1&user=1&limit=5&offset=0}
 exports.getAllCourses = async (req, res) => {
   try {
-    const { sortBy, location, user, direction } = decode2queryData(
+    const { sortBy, location, user, direction, limit, offset } = decode2queryData(
       req.query.data
     ); // URL 쿼리에서 정렬 정보 추출
 
@@ -23,6 +23,8 @@ exports.getAllCourses = async (req, res) => {
       ? (whereCondition.F_Course_Location = fermatDecode(location))
       : null; // 구역 정보가 있을 경우 조회 조건에 추가
     user ? (whereCondition.F_User_id = fermatDecode(user)) : null; // 유저 정보가 있을 경우 조회 조건에 추가
+    limit = limit || 5;
+    offset = offset || 0;
 
     const courses = await Course.findAll({
       where: whereCondition, // 조회 조건이 있을 경우 조회 조건 추가
@@ -31,6 +33,8 @@ exports.getAllCourses = async (req, res) => {
         { model: User, as: "Writer", attributes: ["nickname"] },
         { model: Location, as: "Location", attributes: ["name"] },
       ],
+      limit: limit, // 시작과 끝 갯수를 설정할 수 있음
+      offset: offset, // 시작 인덱스를 설정할 수 있음
     });
     // ***********************************************************
     // include 로 조인된 결과 조회 해서 id 혹시나 불러오는게 있는지 확인 필요**

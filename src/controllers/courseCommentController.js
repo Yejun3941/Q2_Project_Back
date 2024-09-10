@@ -11,7 +11,7 @@ const {
 // where user / course
 exports.getAllComments = async (req, res) => {
   try {
-    const { sortBy, user, course } = decode2queryData(req.query.data); // URL 쿼리에서 정렬 정보 추출
+    const { sortBy, user, course,limit,offset } = decode2queryData(req.query.data); // URL 쿼리에서 정렬 정보 추출
 
     const whereCondition = {}; // 조회 조건을 담을 객체 생성
     user ? (whereCondition.F_User_id = fermatDecode(user)) : null; // 유저 정보가 있을 경우 조회 조건에 추가
@@ -19,11 +19,16 @@ exports.getAllComments = async (req, res) => {
     const orderCondition = []; // 정렬 조건을 담을 객체 생성
     sortBy ? orderCondition.push([sortBy, "ASC"]) : null; // 정렬 정보가 있을 경우 정렬
     sortBy ? orderCondition.push([(secondSortBy = "createdAt"), "ASC"]) : null; // 정렬 정보가 있을 경우 Second 정렬 기준
+    limit = limit || 10;
+    offset = offset || 0;
+    
     const comments = await CourseComment.findAll({
       where: {
         ...whereCondition,
       },
       order: orderCondition,
+      limit: limit,
+      offset: offset,
     }); // 데이터베이스에서 모든 코멘트를 조회
 
     const modifiedComments = comments.map((comment) => ({

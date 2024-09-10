@@ -13,7 +13,7 @@ class Spot extends Sequelize.Model {
           allowNull: true,
         },
         Spot_Name: {
-          type: Sequelize.STRING(12),
+          type: Sequelize.STRING(15),
           allowNull: false,
         },
         Category: {

@@ -59,8 +59,8 @@ exports.createLink = async (req, res) => {
     const modifiedLink = {
       ...newLink.get(),
       id: fermatIncode(newLink.id),
-      course: fermatIncode(link.course),
-      spot: fermatIncode(link.spot),
+      course: fermatIncode(newLink.course),
+      spot: fermatIncode(newLink.spot),
     };
     res.status(201).json(modifiedLink); // 생성된 링크를 JSON 형태로 응답
   } catch (err) {

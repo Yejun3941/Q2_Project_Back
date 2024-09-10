@@ -10,14 +10,19 @@ const {
 // 스팟 가져오는 방식 : 전체 / 구역별 / 카테고리별 /
 exports.getAllSpots = async (req, res) => {
   try {
-    const { category, location } = decode2queryData(req.query.data); // URL 쿼리에서 카테고리와 구역 정보 추출
+    const { category, location, limit, offset } = decode2queryData(req.query.data); // URL 쿼리에서 카테고리와 구역 정보 추출
     const whereCondition = {}; // 조회 조건을 담을 객체 생성
     category ? (whereCondition.category = category) : null; // 카테고리 정보가 있을 경우 조회 조건에 추가
     location ? (whereCondition.F_Spot_Location = fermatDecode(location)) : null; // 구역 정보가 있을 경우 조회 조건에 추가
+    limit = limit || 15;
+    offset = offset || 0;
+
     const spots = await Spot.findAll({
       where: {
         ...whereCondition,
       },
+      limit: limit,
+      offset: offset,
     }); // 데이터베이스에서 category가 "리액트에서 받은 데이터"인 모든 스팟을 조회
     modifiedSpots = spots.map((spot) => ({
       ...spot.get(),

@@ -5,7 +5,7 @@ class Course extends Sequelize.Model {
     Course.init(
       {
         title: {
-          type: Sequelize.STRING(12),
+          type: Sequelize.STRING(15),
           allowNull: true,
           unique: true,
         },
