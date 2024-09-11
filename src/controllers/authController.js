@@ -1,6 +1,9 @@
 const bcrypt = require("bcrypt");
 const passport = require("passport");
 const User = require("../models");
+const { check } = require("express-validator");
+const { Session } = require("express-session");
+const { isLoggedIn } = require("../middlewares/authMiddleware");
 
 exports.join = async (req, res, next) => {
   const { email, nickname, password } = req.body;
@@ -67,3 +70,17 @@ exports.login = (req, res, next) => {
 //     });
 //   });
 // };
+
+
+exports.sessionCheckController = (req, res) => {
+  console.log(">>>Session ID : " , req.sessionID)
+  console.log(">>>>Session Data:", req.session);
+  console.log(">>>>Authenticated", req.isAuthenticated())
+  const { email, nick } = req.user.dataValues;
+  const userData = { email:email, nick:nick };
+  if (req.isAuthenticated()) {
+    res.json({ isLoggedIn:true , user: userData });
+  } else {
+    res.json({ isLoggedIn:false, user: null });
+  }
+}

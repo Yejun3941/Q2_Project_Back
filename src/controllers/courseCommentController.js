@@ -11,7 +11,9 @@ const {
 // where user / course
 exports.getAllComments = async (req, res) => {
   try {
-    const { sortBy, user, course,limit,offset } = decode2queryData(req.query.data); // URL 쿼리에서 정렬 정보 추출
+    const { sortBy, user, course, limit, offset } = decode2queryData(
+      req.query.data
+    ); // URL 쿼리에서 정렬 정보 추출
 
     const whereCondition = {}; // 조회 조건을 담을 객체 생성
     user ? (whereCondition.F_User_id = fermatDecode(user)) : null; // 유저 정보가 있을 경우 조회 조건에 추가
@@ -19,16 +21,19 @@ exports.getAllComments = async (req, res) => {
     const orderCondition = []; // 정렬 조건을 담을 객체 생성
     sortBy ? orderCondition.push([sortBy, "ASC"]) : null; // 정렬 정보가 있을 경우 정렬
     sortBy ? orderCondition.push([(secondSortBy = "createdAt"), "ASC"]) : null; // 정렬 정보가 있을 경우 Second 정렬 기준
-    limit = limit || 10;
-    offset = offset || 0;
-    
+
+    const totalComment = await CourseComment.count({
+      where: {
+        ...whereCondition,
+      },
+    });
     const comments = await CourseComment.findAll({
       where: {
         ...whereCondition,
       },
       order: orderCondition,
-      limit: limit,
-      offset: offset,
+      limit: limit ? parseInt(limit) : 10,
+      offset: offset ? parseInt(offset) : 0,
     }); // 데이터베이스에서 모든 코멘트를 조회
 
     const modifiedComments = comments.map((comment) => ({
@@ -36,6 +41,7 @@ exports.getAllComments = async (req, res) => {
       id: fermatIncode(comment.id),
       F_User_id: fermatIncode(comment.F_User_id),
       F_Course_id: fermatIncode(comment.F_Course_id),
+      total: totalComment,
     }));
 
     res.json(modifiedComments); // 조회된 코멘트들을 JSON 형태로 응답
@@ -49,7 +55,7 @@ exports.getAllComments = async (req, res) => {
 exports.getCommentById = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 코멘트 ID 추출
   try {
-    modifiedid = fermatDecode(id);
+    const modifiedid = fermatDecode(id);
     const comment = await CourseComment.findByPk(modifiedid); // 주어진 ID로 코멘트 조회
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" }); // 코멘트가 없을 경우 404 상태 코드 반환
@@ -101,7 +107,7 @@ exports.updateComment = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 코멘트 ID 추출
   const { comment_content, starPoint } = req.body; // 요청 바디에서 업데이트할 데이터 추출
   try {
-    modifiedid = fermatDecode(id);
+    const modifiedid = fermatDecode(id);
     const comment = await CourseComment.findByPk(modifiedid); // 주어진 ID로 코멘트 조회
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" }); // 코멘트가 없을 경우 404 상태 코드 반환
@@ -130,7 +136,7 @@ exports.updateComment = async (req, res) => {
 exports.deleteComment = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 코멘트 ID 추출
   try {
-    modifiedid = fermatDecode(id);
+    const modifiedid = fermatDecode(id);
     const comment = await CourseComment.findByPk(modifiedid); // 주어진 ID로 코멘트 조회
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" }); // 코멘트가 없을 경우 404 상태 코드 반환

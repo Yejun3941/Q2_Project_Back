@@ -29,7 +29,7 @@ exports.getAllLinks = async (req, res) => {
         },
       ],
     });
-    modifiedLinks = links.map((link) => ({
+    const modifiedLinks = links.map((link) => ({
       ...link.get(),
       id: fermatIncode(link.id),
       course: fermatIncode(link.course),

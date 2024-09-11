@@ -23,10 +23,12 @@ exports.getUserById = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 유저 ID 추출
   try {
     modifiedId = fermatDecode(id);
+
     const user = await User.findByPk(modifiedId); // 주어진 ID로 유저 조회
     if (!user) {
       return res.status(404).json({ error: "User not found" }); // 유저가 없을 경우 404 상태 코드 반환
     }
+
     const modifiedUser = {
       ...user.get(),
       id: fermatIncode(user.id),

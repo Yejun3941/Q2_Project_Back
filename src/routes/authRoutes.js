@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const { join, login, logout } = require("../controllers/authController");
+const { join, login, logout, sessionCheckController } = require("../controllers/authController");
 const { isLoggedIn, isNotLoggedIn } = require("../middlewares/authMiddleware");
 // const {
 //   isLoggedIn,
@@ -52,5 +52,8 @@ router.get(
     res.redirect(`${process.env.BACKEND}/course`); // 성공 시에는 /로 이동
   }
 );
+
+router.get("/session-check", sessionCheckController);
+
 
 module.exports = router;

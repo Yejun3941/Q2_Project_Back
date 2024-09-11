@@ -8,9 +8,8 @@ const {
 // 모든 location 가져오기
 exports.getAllLocations = async (req, res) => {
   try {
-    const locations = await Location.findAll({
-    }); // 데이터베이스에서 category가 "리액트에서 받은 데이터"인 모든 스팟을 조회
-    modifiedLocations = locations.map((location) => ({
+    const locations = await Location.findAll({}); // 데이터베이스에서 category가 "리액트에서 받은 데이터"인 모든 스팟을 조회
+    const modifiedLocations = locations.map((location) => ({
       ...location.get(),
       id: fermatIncode(location.id),
     }));
