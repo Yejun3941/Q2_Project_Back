@@ -82,6 +82,9 @@ exports.getCourseById = async (req, res) => {
       where: {
         F_Course_id: course.id,
       },
+      include: [
+        { model: User, as: "Writer", attributes: ["nickname"] },
+      ],
     });
 
     const modifiedCourse = {
@@ -91,6 +94,13 @@ exports.getCourseById = async (req, res) => {
       F_Course_Location: fermatIncode(course.F_Course_Location),
       nickname: course.Writer.nickname,
       location: course.Location.name,
+      comments: comments.map((comment) => ({
+        ...comment.get(),
+        id: fermatIncode(comment.id),
+        F_User_id: fermatIncode(comment.F_User_id),
+        F_Course_id: fermatIncode(comment.F_Course_id),
+        writer : comment.Writer.nickname,
+      })),
     };
 
     res.json(course);
