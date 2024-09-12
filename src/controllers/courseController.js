@@ -78,6 +78,12 @@ exports.getCourseById = async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
 
+    const comments = await db.CourseComment.findAll({
+      where: {
+        F_Course_id: course.id,
+      },
+    });
+
     const modifiedCourse = {
       ...course.get(),
       id: fermatIncode(course.id),
