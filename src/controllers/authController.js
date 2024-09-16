@@ -4,6 +4,7 @@ const User = require("../models");
 const { check } = require("express-validator");
 const { Session } = require("express-session");
 const { isLoggedIn } = require("../middlewares/authMiddleware");
+const { fermatIncode, fermatDecode } = require("../services/decodingService");
 
 exports.join = async (req, res, next) => {
   const { email, nickname, password } = req.body;
@@ -71,16 +72,15 @@ exports.login = (req, res, next) => {
 //   });
 // };
 
-
 exports.sessionCheckController = (req, res) => {
-  console.log(">>>Session ID : " , req.sessionID)
+  console.log(">>>Session ID : ", req.sessionID);
   console.log(">>>>Session Data:", req.session);
-  console.log(">>>>Authenticated", req.isAuthenticated())
-  const { email, nick } = req.user.dataValues;
-  const userData = { email:email, nick:nick };
+  console.log(">>>>Authenticated", req.isAuthenticated());
+  const { id, email, nickname } = req.user.dataValues;
+  const userData = { id: id, email: email, nickname: nickname };
   if (req.isAuthenticated()) {
-    res.json({ isLoggedIn:true , user: userData });
+    res.json({ isLoggedIn: true, user: userData });
   } else {
-    res.json({ isLoggedIn:false, user: null });
+    res.json({ isLoggedIn: false, user: null });
   }
-}
+};

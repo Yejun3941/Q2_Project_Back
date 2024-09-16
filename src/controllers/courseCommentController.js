@@ -6,7 +6,7 @@ const {
 } = require("../services/decodingService");
 
 // 모든 코멘트 가져오기
-// GET /course-comments?data={sortBy=starPoint&user=121323(encoded)&course=12345(encoded)}
+// GET /course-comments?data={sortBy=starPoint&user=121323&course=12345(encoded)}
 // sort by starPoint / createdAt
 // where user / course
 exports.getAllComments = async (req, res) => {
@@ -16,7 +16,8 @@ exports.getAllComments = async (req, res) => {
     ); // URL 쿼리에서 정렬 정보 추출
 
     const whereCondition = {}; // 조회 조건을 담을 객체 생성
-    user ? (whereCondition.F_User_id = fermatDecode(user)) : null; // 유저 정보가 있을 경우 조회 조건에 추가
+    // user ? (whereCondition.F_User_id = fermatDecode(user)) : null; // 유저 정보가 있을 경우 조회 조건에 추가
+    user ? (whereCondition.F_User_id = user) : null; // 유저 정보가 있을 경우 조회 조건에 추가
     course ? (whereCondition.F_Course_id = fermatDecode(course)) : null; // 코스 정보가 있을 경우 조회 조건에 추가
     const orderCondition = []; // 정렬 조건을 담을 객체 생성
     sortBy ? orderCondition.push([sortBy, "ASC"]) : null; // 정렬 정보가 있을 경우 정렬
@@ -39,7 +40,7 @@ exports.getAllComments = async (req, res) => {
     const modifiedComments = comments.map((comment) => ({
       ...comments.get(),
       id: fermatIncode(comment.id),
-      F_User_id: fermatIncode(comment.F_User_id),
+      // F_User_id: fermatIncode(comment.F_User_id),
       F_Course_id: fermatIncode(comment.F_Course_id),
       total: totalComment,
     }));
@@ -64,7 +65,7 @@ exports.getCommentById = async (req, res) => {
     const modifiedComment = {
       ...comment.get(),
       id: fermatIncode(comment.id),
-      F_User_id: fermatIncode(comment.F_User_id),
+      // F_User_id: fermatIncode(comment.F_User_id),
       F_Course_id: fermatIncode(comment.F_Course_id),
     };
     res.json(modifiedComment); // 조회된 코멘트를 JSON 형태로 응답
@@ -79,7 +80,7 @@ exports.createComment = async (req, res) => {
   const { F_Course_id, F_User_id, comment_content, starPoint } = req.body; // 요청 바디에서 필요한 데이터 추출
   try {
     F_Course_id = fermatDecode(F_Course_id);
-    F_User_id = fermatDecode(F_User_id);
+    // F_User_id = fermatDecode(F_User_id);
 
     const newComment = await CourseComment.create({
       F_Course_id,
@@ -91,7 +92,7 @@ exports.createComment = async (req, res) => {
     const modifiedComment = {
       ...newComment.get(),
       id: fermatIncode(comment.id),
-      F_User_id: fermatIncode(comment.F_User_id),
+      // F_User_id: fermatIncode(comment.F_User_id),
       F_Course_id: fermatIncode(comment.F_Course_id),
     };
 
@@ -122,7 +123,7 @@ exports.updateComment = async (req, res) => {
     const modifiedComment = {
       ...comment.get(),
       id: fermatIncode(comment.id),
-      F_User_id: fermatIncode(comment.F_User_id),
+      // F_User_id: fermatIncode(comment.F_User_id),
       F_Course_id: fermatIncode(comment.F_Course_id),
     };
     res.json(modifiedComment); // 업데이트된 코멘트를 JSON 형태로 응답
