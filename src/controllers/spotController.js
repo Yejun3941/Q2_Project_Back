@@ -1,4 +1,4 @@
-const { Spot } = require("../models"); // Spot 모델 불러오기. spot 단일 모델만 사용하는 경우여서, 따로 db 객체를 불러오지 않았음
+const { Spot, Location } = require("../models"); // Spot 모델 불러오기. spot 단일 모델만 사용하는 경우여서, 따로 db 객체를 불러오지 않았음
 const {
   decode2queryData,
   fermatIncode,
@@ -6,32 +6,48 @@ const {
 } = require("../services/decodingService"); // base64 디코딩 서비스 불러오기
 
 // 모든 스팟 가져오기
-// GET /spots?data={category="카페"&location=1}
+// GET /spot-api?data={category="카페"&location=1}
 // 스팟 가져오는 방식 : 전체 / 구역별 / 카테고리별 /
+// controllers/spotController.js
+const { decode2queryData } = require("../services/decodingService"); // 디코딩 함수 불러오기
+
 exports.getAllSpots = async (req, res) => {
   try {
-    const { category, location, limit, offset } = decode2queryData(
+    // 쿼리 스트링에서 'data' 값을 디코딩
+    const { page, pageSize, category, location } = decode2queryData(
       req.query.data
-    ); // URL 쿼리에서 카테고리와 구역 정보 추출
+    );
+
+    // 조회 조건 설정
     const whereCondition = {}; // 조회 조건을 담을 객체 생성
 
-    category ? (whereCondition.category = category) : null; // 카테고리 정보가 있을 경우 조회 조건에 추가
-    location ? (whereCondition.F_Spot_Location = fermatDecode(location)) : null; // 구역 정보가 있을 경우 조회 조건에 추가
+    if (category) {
+      whereCondition.category = category; // 카테고리 필터 추가
+    }
+    if (location) {
+      whereCondition.F_Spot_Location = fermatDecode(location); // 위치 필터 추가
+    }
 
+    // 총 스팟 수 계산
     const totalSpot = await Spot.count({
-      where: {
-        ...whereCondition,
-      },
+      where: { ...whereCondition },
     });
 
+    // 스팟 데이터 조회
     const spots = await Spot.findAll({
-      where: {
-        ...whereCondition,
-      },
-      limit: limit ? parseInt(limit) : 15,
-      offset: offset ? parseInt(offset) : 0,
-    }); // 데이터베이스에서 category가 "리액트에서 받은 데이터"인 모든 스팟을 조회
+      where: { ...whereCondition },
+      include: [
+        {
+          model: Location,
+          as: "Location",
+          attributes: ["Location_Name"],
+        },
+      ],
+      limit: pageSize ? parseInt(pageSize) : 15,
+      offset: page ? parseInt(page) * parseInt(pageSize) : 0,
+    });
 
+    // 조회된 스팟 데이터에 인코딩 작업 추가
     const modifiedSpots = spots.map((spot) => ({
       ...spot.get(),
       id: fermatIncode(spot.id),
@@ -41,7 +57,7 @@ exports.getAllSpots = async (req, res) => {
 
     res.json(modifiedSpots); // 조회된 스팟들을 JSON 형태로 응답
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch spots" }); // 에러 발생 시 500 상태 코드와 에러 메시지 반환
+    res.status(500).json({ error: "Failed to fetch spots" }); // 에러 처리
   }
 };
 
