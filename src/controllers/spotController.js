@@ -41,7 +41,7 @@ exports.getAllSpots = async (req, res) => {
         },
       ],
       limit: pageSize ? parseInt(pageSize) : 15,
-      offset: page ? parseInt(page) * parseInt(pageSize) : 0,
+      offset: page ? parseInt(page-1) * parseInt(pageSize) : 0,
     });
 
     // 이 부분에서 콘솔로그
