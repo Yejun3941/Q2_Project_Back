@@ -19,11 +19,11 @@ const fermatThm = {
 }
 
 function fermatIncode(data) {
-  return (data * fermatThm.fermatDecodeNumber + add_number) % fermatThm.prime_number 
+  return (data * fermatThm.fermatDecodeNumber + fermatThm.add_number) % fermatThm.prime_number 
 }
 
 function fermatDecode(data) {
-  return (((data-add_number)%fermatThm.prime_number) * fermatThm.fermatIncodeNumber) % fermatThm.prime_number
+  return (((data-fermatThm.add_number)%fermatThm.prime_number) * fermatThm.fermatIncodeNumber) % fermatThm.prime_number
 }
 
 module.exports = {

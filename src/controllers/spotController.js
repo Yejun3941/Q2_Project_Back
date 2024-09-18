@@ -8,9 +8,6 @@ const {
 // 모든 스팟 가져오기
 // GET /spot-api?data={category="카페"&location=1}
 // 스팟 가져오는 방식 : 전체 / 구역별 / 카테고리별 /
-// controllers/spotController.js
-const { decode2queryData } = require("../services/decodingService"); // 디코딩 함수 불러오기
-
 exports.getAllSpots = async (req, res) => {
   try {
     // 쿼리 스트링에서 'data' 값을 디코딩
@@ -40,22 +37,28 @@ exports.getAllSpots = async (req, res) => {
         {
           model: Location,
           as: "Location",
-          attributes: ["Location_Name"],
+          attributes: ["name"],
         },
       ],
       limit: pageSize ? parseInt(pageSize) : 15,
       offset: page ? parseInt(page) * parseInt(pageSize) : 0,
     });
 
-    // 조회된 스팟 데이터에 인코딩 작업 추가
-    const modifiedSpots = spots.map((spot) => ({
-      ...spot.get(),
-      id: fermatIncode(spot.id),
-      F_Spot_Location: fermatIncode(spot.F_Spot_Location),
-    }));
-    modifiedSpots.total = totalSpot;
+    // 이 부분에서 콘솔로그
+    console.log(spots);
 
-    res.json(modifiedSpots); // 조회된 스팟들을 JSON 형태로 응답
+    // 조회된 스팟 데이터에 인코딩 작업 추가
+    const modifiedSpots = spots.map((spot) => {
+      const spotData = spot.get();
+      console.log(spotData); // 변환된 데이터 확인
+      return {
+        ...spotData,
+        id: fermatIncode(spotData.id),
+        F_Spot_Location: fermatIncode(spotData.F_Spot_Location),
+      };
+    });
+
+    res.json({ spots: modifiedSpots, total: totalSpot }); // 조회된 스팟들과 총 스팟 수를 JSON 형태로 응답
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch spots" }); // 에러 처리
   }
