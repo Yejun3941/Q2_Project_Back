@@ -54,7 +54,12 @@ class Course extends Sequelize.Model {
       as: "Location",
       foreignKey: "F_Course_Location",
     });
-    db.Course.hasMany(db.Link, { foreignKey: "F_Course_id" });
+    // db.Course.hasMany(db.Link, { foreignKey: "F_Course_id" });
+    db.Course.belongsToMany(db.Spot, {
+      through: db.Link,
+      foreignKey: "F_Course_id",
+    });
+
     db.Course.hasMany(db.CourseComment, { foreignKey: "F_Course_id" });
   }
 }

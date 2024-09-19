@@ -1,6 +1,15 @@
 const { where, or } = require("sequelize");
-const { Course, User, Location, Spot } = require("../models"); // 필요한 모델 불러오기
-const db = require("../models"); // 전체 db 객체를 가져와 사용할 수 있음
+const {
+  Course,
+  User,
+  Location,
+  Spot,
+  Link,
+  CourseComment,
+} = require("../models");
+const db = require("../models");
+const fs = require("fs");
+const path = require("path");
 const {
   decode2queryData,
   fermatDecode,
@@ -8,36 +17,33 @@ const {
 } = require("../services/decodingService"); // base64 디코딩 서비스 불러오기
 
 // 모든 코스 가져오기
-// GET /course?data={sortBy=starPoint&loc=1&user=1&limit=5&offset=0}
+// GET /course-api?data={sortBy=createdAt&location=서울&user=121323(encoded)}
 exports.getAllCourses = async (req, res) => {
   try {
     const { sortBy, location, user, direction, limit, offset } =
       decode2queryData(req.query.data); // URL 쿼리에서 정렬 정보 추출
-
-    const orderCondition = []; // 정렬 조건을 담을 객체 생성
-    direction ? (direction = direction) : (direction = "ASC"); // 정렬 방향이 없을 경우 기본값 설정
-
-    sortBy ? orderCondition.push([sortBy, direction]) : null; // 정렬 정보가 있을 경우 정렬
+    const sortDirection = direction || "ASC"; // 기본 정렬 방향 설정
+    const orderCondition = sortBy ? [[sortBy, sortDirection]] : []; // 정렬 조건
     const whereCondition = {}; // 조회 조건을 담을 객체 생성
-    location
-      ? (whereCondition.F_Course_Location = fermatDecode(location))
-      : null; // 구역 정보가 있을 경우 조회 조건에 추가
-    user ? (whereCondition.F_User_id = fermatDecode(user)) : null; // 유저 정보가 있을 경우 조회 조건에 추가
 
-    const totalCourse = await Course.count({
-      where: {
-        ...whereCondition,
-      },
-    });
+    if (location) whereCondition.F_Course_Location = fermatDecode(location); // 구역 정보 조회 조건 추가
+    // if (user) whereCondition.F_User_id = fermatDecode(user); // 유저 정보 조회 조건 추가
+    if (user) whereCondition.F_User_id = user; // 유저 정보 조회 조건 추가
+
+    const totalCourse = await Course.count({ where: { ...whereCondition } });
 
     const courses = await Course.findAll({
-      where: {
-        ...whereCondition,
-      }, // 조회 조건이 있을 경우 조회 조건 추가
-      order: orderCondition, // 정렬 조건이 있을 경우 정렬
+      where: { ...whereCondition },
+      order: orderCondition,
       include: [
         { model: User, as: "Writer", attributes: ["nickname"] },
         { model: Location, as: "Location", attributes: ["name"] },
+        {
+          model: Spot,
+          as: "Spot",
+          attributes: ["Category"],
+          through: { model: Link, attributes: [] },
+        },
       ],
       limit: limit ? parseInt(limit) : 5, // 조회 개수를 설정할 수 있음
       offset: offset ? parseInt(offset) : 0, // 조회 시작 위치를 설정할 수 있음
@@ -46,24 +52,39 @@ exports.getAllCourses = async (req, res) => {
     // include 로 조인된 결과 조회 해서 id 혹시나 불러오는게 있는지 확인 필요**
     // console.log(courses);
     // ***********************************************************
-    const modifiedCourses = courses.map((course) => ({
-      ...course.get(),
-      id: fermatIncode(course.id),
-      F_User_id: fermatIncode(course.F_User_id),
-      F_Course_Location: fermatIncode(course.F_Course_Location),
-      nickname: course.Writer.nickname,
-      location: course.Location.name,
-      total: totalCourse,
-    }));
+    const modifiedCourses = courses.map((course) => {
+      const imagePath = path.join(
+        __dirname,
+        "../assets/courseImage",
+        `${course.id}.jpg`
+      );
+      let imageUrl = null;
+      if (fs.existsSync(imagePath)) {
+        imageUrl = `/assets/courseImage/${course.id}.jpg`; // 이미지 파일의 URL 제공
+      }
 
-    res.json(courses);
+      return {
+        ...course.get(),
+        id: fermatIncode(course.id),
+        // F_User_id: fermatIncode(course.F_User_id),
+        F_Course_Location: fermatIncode(course.F_Course_Location),
+        userName: course.Writer.nickname,
+        location: course.Location.name,
+        tags: course.Spot.map((spot) => spot.Category),
+        imageUrl,
+        total: totalCourse,
+      };
+    });
+
+    res.json(modifiedCourses);
   } catch (err) {
+    console.error("Error fetching courses:", err);
     res.status(500).json({ error: "Failed to fetch courses" });
   }
 };
 
 // 특정 코스 가져오기 (ID로 조회)
-// GET /courses/:id
+// GET /course-api/:id
 exports.getCourseById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -72,73 +93,137 @@ exports.getCourseById = async (req, res) => {
       include: [
         { model: User, as: "Writer", attributes: ["nickname"] },
         { model: Location, as: "Location", attributes: ["name"] },
+        {
+          model: Spot,
+          as: "Spot",
+          attributes: ["id", "Spot_Name", "Category"],
+          through: { model: Link },
+        },
+        {
+          model: CourseComment,
+          as: "CourseComment",
+          attributes: [
+            "comment_content",
+            "starPoint",
+            "createdAt",
+            "F_User_id",
+          ],
+          include: [{ model: User, attributes: ["nickname"] }],
+        },
       ],
     });
+
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    const comments = await db.CourseComment.findAll({
-      where: {
-        F_Course_id: course.id,
-      },
-      include: [
-        { model: User, as: "Writer", attributes: ["nickname"] },
-      ],
-    });
+    const imagePath = path.join(
+      __dirname,
+      "../assets/courseImage",
+      `${course.id}.jpg`
+    );
+    let imageUrl = null;
+    if (fs.existsSync(imagePath)) {
+      imageUrl = `/assets/courseImage/${course.id}.jpg`; // 이미지 URL 제공
+    }
 
     const modifiedCourse = {
       ...course.get(),
       id: fermatIncode(course.id),
-      F_User_id: fermatIncode(course.F_User_id),
+      // F_User_id: fermatIncode(course.F_User_id),
       F_Course_Location: fermatIncode(course.F_Course_Location),
       nickname: course.Writer.nickname,
       location: course.Location.name,
-      comments: comments.map((comment) => ({
-        ...comment.get(),
-        id: fermatIncode(comment.id),
-        F_User_id: fermatIncode(comment.F_User_id),
-        F_Course_id: fermatIncode(comment.F_Course_id),
-        writer : comment.Writer.nickname,
+      spot: course.Spot.map((spot) => ({
+        ...spot.get(),
+        id: fermatIncode(spot.id),
       })),
+      comment: course.CourseComment.map((comment) => ({
+        ...comment.get(),
+        nickName: comment.User.nickname,
+      })),
+      imageUrl,
     };
 
-    res.json(course);
+    res.json(modifiedCourse);
   } catch (err) {
+    console.error("Error fetching course:", err);
     res.status(500).json({ error: "Failed to fetch course" });
   }
 };
 
-// POST /course
+// 코스 생성하기
+// POST /course-api
 exports.createCourse = async (req, res) => {
-  const { F_User_id, Course_title, Course_content, F_Course_Location } =
+  const { F_User_id, Course_title, Course_content, F_Course_Location, spots } =
     req.body;
+  const transaction = await db.sequelize.transaction(); // 트랜잭션 시작
   try {
-    F_User_id = fermatDecode(F_User_id);
-    F_Course_Location = fermatDecode(F_Course_Location);
+    // const decodedUserId = fermatDecode(F_User_id);
+    const decodedLocation = fermatDecode(F_Course_Location);
 
-    const newCourse = await Course.create({
-      F_User_id,
-      Course_title,
-      Course_content,
-      F_Course_Location,
-      meanStartPoint: 0, // 초기 평점
-      countStarPoint: 0, // 초기 댓글 갯수
-      createAt: new Date(), // 현재 시간
-    });
+    const newCourse = await Course.create(
+      {
+        F_User_id,
+        Course_title,
+        Course_content,
+        F_Course_Location: decodedLocation,
+        meanStartPoint: 0,
+        countStarPoint: 0,
+        createAt: new Date(),
+      },
+      { transaction }
+    );
+
+    await newCourse.addSpots(
+      spots.map((spot) => fermatDecode(spot)),
+      { transaction }
+    );
+
+    await transaction.commit(); // 트랜잭션 커밋
+
     const modifiedCourse = {
       ...newCourse.get(),
       id: fermatIncode(newCourse.id),
-      F_User_id: fermatIncode(newCourse.F_User_id),
+      // F_User_id: fermatIncode(newCourse.F_User_id),
       F_Course_Location: fermatIncode(newCourse.F_Course_Location),
     };
+
     res.status(201).json(modifiedCourse);
   } catch (err) {
+    await transaction.rollback(); // 트랜잭션 롤백
+    console.error("Error creating course:", err);
     res.status(500).json({ error: "Failed to create course" });
   }
 };
 
-// UPDATE /course/:id
+// 이미지 업로드
+// POST /course-api/image?courseId=123
+exports.uploadImage = async (req, res) => {
+  const { courseId } = req.query;
+  const { image } = req.file;
+  try {
+    const modifiedid = fermatDecode(courseId);
+    const course = await Course.findByPk(modifiedid);
+    if (!course) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+
+    const imagePath = path.join(
+      __dirname,
+      "../assets/courseImage",
+      `${course.id}.jpg`
+    );
+    fs.writeFileSync(imagePath, image.buffer); // 파일 저장
+    res.json({ message: "Image uploaded successfully" });
+  } catch (err) {
+    console.error("Error uploading image:", err);
+    res.status(500).json({ error: "Failed to upload image" });
+  }
+};
+
+// 코스 수정하기
+// PUT /course-api/:id
 exports.updateCourse = async (req, res) => {
   const { id } = req.params;
   const {
@@ -150,7 +235,7 @@ exports.updateCourse = async (req, res) => {
   } = req.body;
   try {
     const modifiedid = fermatDecode(id);
-    F_Course_Location = fermatDecode(F_Course_Location); // User 는 변경이 없음
+    const decodedLocation = fermatDecode(F_Course_Location);
 
     const course = await Course.findByPk(modifiedid);
     if (!course) {
@@ -159,7 +244,7 @@ exports.updateCourse = async (req, res) => {
 
     course.Course_title = Course_title || course.Course_title;
     course.Course_content = Course_content || course.Course_content;
-    course.F_Course_Location = F_Course_Location || course.F_Course_Location;
+    course.F_Course_Location = decodedLocation || course.F_Course_Location;
     course.meanStartPoint =
       meanStartPoint !== undefined ? meanStartPoint : course.meanStartPoint;
     course.countStarPoint =
@@ -170,17 +255,18 @@ exports.updateCourse = async (req, res) => {
     const modifiedCourse = {
       ...course.get(),
       id: fermatIncode(course.id),
-      F_User_id: fermatIncode(course.F_User_id),
+      // F_User_id: fermatIncode(course.F_User_id),
       F_Course_Location: fermatIncode(course.F_Course_Location),
     };
 
     res.json(modifiedCourse);
   } catch (err) {
+    console.error("Error updating course:", err);
     res.status(500).json({ error: "Failed to update course" });
   }
 };
 
-// DELETE /course/:id
+// DELETE /course-api/:id
 exports.deleteCourse = async (req, res) => {
   const { id } = req.params;
   try {
@@ -190,9 +276,10 @@ exports.deleteCourse = async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    await course.destroy();
+    await course.destroy({ cascade: true }); // 관련된 데이터도 삭제
     res.json({ message: "Course deleted successfully" });
   } catch (err) {
+    console.error("Error deleting course:", err);
     res.status(500).json({ error: "Failed to delete course" });
   }
 };

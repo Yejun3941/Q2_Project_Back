@@ -46,7 +46,11 @@ class Spot extends Sequelize.Model {
       as: "Location",
       foreignKey: "F_Spot_Location",
     });
-    db.Spot.hasMany(db.Link, { foreignKey: "F_Spot_id" });
+    // db.Spot.hasMany(db.Link, { foreignKey: "F_Spot_id" });
+    db.Spot.belongsToMany(db.Course, {
+      through: db.Link,
+      foreignKey: "F_Spot_id",
+    });
   }
 }
 
