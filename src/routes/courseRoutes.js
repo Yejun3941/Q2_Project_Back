@@ -3,7 +3,7 @@ const multer = require("multer");
 const router = express.Router();
 const courseController = require("../controllers/courseController");
 
-const imageUpload = multer({ dest: "../assets/courseImage/" });
+const imageUpload = multer();
 
 // 모든 코스 가져오기
 router.get("/", courseController.getAllCourses);
@@ -17,7 +17,7 @@ router.post("/", courseController.createCourse);
 // image uplodad
 router.post(
   "/image",
-  imageUpload.single("image"),
+  imageUpload.array("files"),
   courseController.uploadImage
 );
 
