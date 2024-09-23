@@ -1,9 +1,5 @@
 const { Spot, Location } = require("../models"); // Spot 모델 불러오기. spot 단일 모델만 사용하는 경우여서, 따로 db 객체를 불러오지 않았음
-const {
-  decode2queryData,
-  fermatIncode,
-  fermatDecode,
-} = require("../services/decodingService"); // base64 디코딩 서비스 불러오기
+const { decode2queryData } = require("../services/decodingService"); // base64 디코딩 서비스 불러오기
 
 // 모든 스팟 가져오기
 // GET /spot-api?data={category="카페"&location=1}
@@ -22,7 +18,7 @@ exports.getAllSpots = async (req, res) => {
       whereCondition.category = category; // 카테고리 필터 추가
     }
     if (location) {
-      whereCondition.F_Spot_Location = fermatDecode(location); // 위치 필터 추가
+      whereCondition.F_Spot_Location = location; // 위치 필터 추가
     }
 
     // 총 스팟 수 계산
@@ -41,7 +37,7 @@ exports.getAllSpots = async (req, res) => {
         },
       ],
       limit: pageSize ? parseInt(pageSize) : 15,
-      offset: page ? parseInt(page-1) * parseInt(pageSize) : 0,
+      offset: page ? parseInt(page - 1) * parseInt(pageSize) : 0,
     });
 
     // 이 부분에서 콘솔로그
@@ -53,8 +49,8 @@ exports.getAllSpots = async (req, res) => {
       console.log(spotData); // 변환된 데이터 확인
       return {
         ...spotData,
-        id: fermatIncode(spotData.id),
-        F_Spot_Location: fermatIncode(spotData.F_Spot_Location),
+        // id: spotData.id,
+        // F_Spot_Location: spotData.F_Spot_Location,
       };
     });
 
@@ -69,7 +65,7 @@ exports.getAllSpots = async (req, res) => {
 exports.getSpotById = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 스팟 ID 추출
   try {
-    const modifiedId = fermatDecode(id);
+    const modifiedId = id;
     const spot = await Spot.findByPk(modifiedId); // 주어진 ID로 스팟 조회
     if (!spot) {
       return res.status(404).json({ error: "Spot not found" }); // 스팟이 없을 경우 404 상태 코드 반환
@@ -77,8 +73,8 @@ exports.getSpotById = async (req, res) => {
 
     const modeifiedSpot = {
       ...spot.get(),
-      id: fermatIncode(spot.id),
-      F_Spot_Location: fermatIncode(spot.F_Spot_Location),
+      // id: spot.id,
+      // F_Spot_Location: spot.F_Spot_Location,
     };
     res.json(modeifiedSpot); // 조회된 스팟을 JSON 형태로 응답
   } catch (err) {
@@ -91,7 +87,7 @@ exports.getSpotById = async (req, res) => {
 exports.createSpot = async (req, res) => {
   const { Lat, Lng, Spot_Name, F_Spot_Location, Category, Photo } = req.body; // 요청 바디에서 필요한 데이터 추출
   try {
-    F_Spot_Location = fermatDecode(F_Spot_Location);
+    // F_Spot_Location = F_Spot_Location;
     const newSpot = await Spot.create({
       Lat,
       Lng,
@@ -103,8 +99,8 @@ exports.createSpot = async (req, res) => {
 
     const modifiedSpot = {
       ...newSpot.get(),
-      id: fermatIncode(newSpot.id),
-      F_Spot_Location: fermatIncode(newSpot.F_Spot_Location),
+      // id: fermatIncode(newSpot.id),
+      // F_Spot_Location: fermatIncode(newSpot.F_Spot_Location),
     };
     res.status(201).json(modifiedSpot); // 생성된 스팟을 JSON 형태로 응답
   } catch (err) {
@@ -118,8 +114,8 @@ exports.updateSpot = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 스팟 ID 추출
   const { Lat, Lng, Spot_Name, F_Spot_Location, Category, Photo } = req.body; // 요청 바디에서 업데이트할 데이터 추출
   try {
-    const modifiedId = fermatDecode(id);
-    F_Spot_Location = fermatDecode(F_Spot_Location); // User 는 변경이 없음
+    const modifiedId = id;
+    // F_Spot_Location = fermatDecode(F_Spot_Location); // User 는 변경이 없음
 
     const spot = await Spot.findByPk(modifiedId); // 주어진 ID로 스팟 조회
     if (!spot) {
@@ -138,8 +134,8 @@ exports.updateSpot = async (req, res) => {
 
     const modifiedSpot = {
       ...spot.get(),
-      id: fermatIncode(spot.id),
-      F_Spot_Location: fermatIncode(spot.F_Spot_Location),
+      // id: fermatIncode(spot.id),
+      // F_Spot_Location: fermatIncode(spot.F_Spot_Location),
     };
     res.json(modifiedSpot); // 업데이트된 스팟을 JSON 형태로 응답
   } catch (err) {
@@ -152,7 +148,7 @@ exports.updateSpot = async (req, res) => {
 exports.deleteSpot = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 스팟 ID 추출
   try {
-    const modifiedId = fermatDecode(id);
+    const modifiedId = id;
     const spot = await Spot.findByPk(modifiedId); // 주어진 ID로 스팟 조회
     if (!spot) {
       return res.status(404).json({ error: "Spot not found" }); // 스팟이 없을 경우 404 상태 코드 반환

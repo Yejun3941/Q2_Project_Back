@@ -1,9 +1,5 @@
 const { User } = require("../models"); // User 모델 불러오기
-const {
-  decode2queryData,
-  fermatDecode,
-  fermatIncode,
-} = require("../services/decodingService"); // base64 디코딩 서비스 불러오기
+const { decode2queryData } = require("../services/decodingService"); // base64 디코딩 서비스 불러오기
 
 // 모든 유저 가져오기
 // GET /users
@@ -22,7 +18,7 @@ const {
 exports.getUserById = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 유저 ID 추출
   try {
-    modifiedId = fermatDecode(id);
+    modifiedId = id;
 
     const user = await User.findByPk(modifiedId); // 주어진 ID로 유저 조회
     if (!user) {
@@ -31,7 +27,7 @@ exports.getUserById = async (req, res) => {
 
     const modifiedUser = {
       ...user.get(),
-      id: fermatIncode(user.id),
+      // id: fermatIncode(user.id),
     };
     res.json(modifiedUser); // 조회된 유저를 JSON 형태로 응답
   } catch (err) {
@@ -63,7 +59,7 @@ exports.updateUser = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 유저 ID 추출
   const { nickname } = req.body; // 요청 바디에서 업데이트할 데이터 추출
   try {
-    modifiedId = fermatDecode(id);
+    modifiedId = id;
     const user = await User.findByPk(modifiedId); // 주어진 ID로 유저 조회
     if (!user) {
       return res.status(404).json({ error: "User not found" }); // 유저가 없을 경우 404 상태 코드 반환
@@ -78,7 +74,7 @@ exports.updateUser = async (req, res) => {
     await user.save(); // 변경된 내용을 데이터베이스에 저장
     modifiedUser = {
       ...user.get(),
-      id: fermatIncode(user.id),
+      // id: fermatIncode(user.id),
     };
     res.json(modifiedUser); // 업데이트된 유저를 JSON 형태로 응답
   } catch (err) {
@@ -91,7 +87,7 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   const { id } = req.params; // URL 파라미터에서 유저 ID 추출
   try {
-    modifiedId = fermatDecode(id);
+    modifiedId = id;
     const user = await User.findByPk(modifiedId); // 주어진 ID로 유저 조회
     if (!user) {
       return res.status(404).json({ error: "User not found" }); // 유저가 없을 경우 404 상태 코드 반환
