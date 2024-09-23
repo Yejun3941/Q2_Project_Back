@@ -17,7 +17,7 @@ const {
 } = require("../services/decodingService"); // base64 디코딩 서비스 불러오기
 
 // 모든 코스 가져오기
-// GET /course-api?data={sortBy=createdAt&location=서울&user=121323(encoded)}
+// GET /course-api?data={sortBy=createdAt&location=서울&user=121323&limit=5&offset=0}
 exports.getAllCourses = async (req, res) => {
   try {
     const { sortBy, location, user, direction, limit, offset } =
@@ -201,7 +201,7 @@ exports.createCourse = async (req, res) => {
 // POST /course-api/image?courseId=123
 exports.uploadImage = async (req, res) => {
   const { courseId } = req.query;
-  const { image } = req.file;
+  const files = req.files;
   try {
     const modifiedid = fermatDecode(courseId);
     const course = await Course.findByPk(modifiedid);
@@ -209,16 +209,21 @@ exports.uploadImage = async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    const imagePath = path.join(
+    // 여러 이미지 저장 처리
+    files.forEach((file, index) => {
+      const imagePath = path.join(
       __dirname,
-      "../assets/courseImage",
-      `${course.id}.jpg`
-    );
-    fs.writeFileSync(imagePath, image.buffer); // 파일 저장
-    res.json({ message: "Image uploaded successfully" });
+      `../assets/courseImage/${course.id}`,
+      `${course.id}_${index}.jpg`
+      );
+      fs.mkdirSync(path.dirname(imagePath), { recursive: true }); // 폴더 생성
+      fs.writeFileSync(imagePath, file.buffer); // 파일 저장
+    });
+
+    res.json({ message: "Images uploaded successfully" });
   } catch (err) {
-    console.error("Error uploading image:", err);
-    res.status(500).json({ error: "Failed to upload image" });
+    console.error("Error uploading images:", err);
+    res.status(500).json({ error: "Failed to upload images" });
   }
 };
 
