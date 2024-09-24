@@ -23,6 +23,8 @@ router.use("/link-api", link);
 
 router.use("/location-api", location);
 
+router.use("/courseImage", express.static(Path.join(__dirname, "../../assets/courseImage")));
+
 router.get("*", (req, res) => {
   res.sendFile(Path.join(__dirname, "../../build", "index.html"));
 });
