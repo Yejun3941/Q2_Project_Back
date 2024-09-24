@@ -35,7 +35,7 @@ exports.getAllCourses = async (req, res) => {
         { model: Location, as: "Location", attributes: ["name"] },
         {
           model: Spot,
-          as: "Spot",
+          as: "Spots",
           attributes: ["Category"],
           through: { model: Link, attributes: [] },
         },
@@ -50,14 +50,14 @@ exports.getAllCourses = async (req, res) => {
     const modifiedCourses = courses.map((course) => {
       const imagePath = path.join(
         __dirname,
-        "../assets/courseImage",
-        `${course.id}.jpg`
+        `../assets/courseImage/${course.id}`,
+        `${course.id}_0.jpg`
       );
       let imageUrl = null;
+      const backend = process.env.BACKEND || "http://localhost:3001";
       if (fs.existsSync(imagePath)) {
-        imageUrl = `/assets/courseImage/${course.id}.jpg`; // 이미지 파일의 URL 제공
+        imageUrl = path.join(backend,`courseImage/${course.id}/${course.id}_0.jpg`); // 이미지 파일의 URL 제공
       }
-
       return {
         ...course.get(),
         id: course.id,
@@ -65,12 +65,14 @@ exports.getAllCourses = async (req, res) => {
         F_Course_Location: course.F_Course_Location,
         userName: course.Writer.nickname,
         location: course.Location.name,
-        tags: course.Spot.map((spot) => spot.Category),
+        tags: course.Spots.map((spot) => spot.Category),
         imageUrl,
       };
     });
 
-    res.json({ courses: modifiedCourses, total: totalCourse });
+    console.log(modifiedCourses);
+
+    res.json({ modifiedCourses: modifiedCourses, total: totalCourse });
   } catch (err) {
     console.error("Error fetching courses:", err);
     res.status(500).json({ error: "Failed to fetch courses" });
@@ -113,8 +115,8 @@ exports.getCourseById = async (req, res) => {
 
     const imagePath = path.join(
       __dirname,
-      "../assets/courseImage",
-      `${course.id}.jpg`
+      `../assets/courseImage/${course.id}`,
+      `${course.id}_${index}.jpg`
     );
     let imageUrl = null;
     if (fs.existsSync(imagePath)) {
