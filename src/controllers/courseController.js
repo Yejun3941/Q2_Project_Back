@@ -17,7 +17,7 @@ const { decode2queryData } = require("../services/decodingService"); // base64 �
 exports.getAllCourses = async (req, res) => {
   console.log("getAllCourses called");
   try {
-    const { sortBy, location, user, direction, limit, offset } =
+    const { sortBy, location, user, direction, page, pageSize } =
       decode2queryData(req.query.data); // URL 쿼리에서 정렬 정보 추출
     console.log("Query parameters:", { sortBy, location, user, direction, limit, offset });
 
@@ -44,8 +44,8 @@ exports.getAllCourses = async (req, res) => {
           through: { model: Link, attributes: [] },
         },
       ],
-      limit: limit ? parseInt(limit) : 5, // 조회 개수를 설정할 수 있음
-      offset: offset ? parseInt(offset) : 0, // 조회 시작 위치를 설정할 수 있음
+      limit: pageSize ? parseInt(pageSize) : 5,
+      offset: page ? parseInt(page - 1) * parseInt(pageSize) : 0,
     });
     console.log("Fetched courses:", courses);
 
