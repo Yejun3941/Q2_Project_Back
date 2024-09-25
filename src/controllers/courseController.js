@@ -19,7 +19,7 @@ exports.getAllCourses = async (req, res) => {
   try {
     const { sortBy, location, user, direction, page, pageSize } =
       decode2queryData(req.query.data); // URL 쿼리에서 정렬 정보 추출
-    console.log("Query parameters:", { sortBy, location, user, direction, limit, offset });
+    console.log("Query parameters:", { sortBy, location, user, direction});
 
     const sortDirection = direction || "ASC"; // 기본 정렬 방향 설정
     const orderCondition = sortBy ? [[sortBy, sortDirection]] : []; // 정렬 조건
