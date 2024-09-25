@@ -15,9 +15,12 @@ const { decode2queryData } = require("../services/decodingService"); // base64 �
 // 모든 코스 가져오기
 // GET /course-api?data={sortBy=createdAt&location=서울&user=121323&limit=5&offset=0}
 exports.getAllCourses = async (req, res) => {
+  console.log("getAllCourses called");
   try {
     const { sortBy, location, user, direction, limit, offset } =
       decode2queryData(req.query.data); // URL 쿼리에서 정렬 정보 추출
+    console.log("Query parameters:", { sortBy, location, user, direction, limit, offset });
+
     const sortDirection = direction || "ASC"; // 기본 정렬 방향 설정
     const orderCondition = sortBy ? [[sortBy, sortDirection]] : []; // 정렬 조건
     const whereCondition = {}; // 조회 조건을 담을 객체 생성
@@ -26,6 +29,7 @@ exports.getAllCourses = async (req, res) => {
     if (user) whereCondition.F_User_id = user; // 유저 정보 조회 조건 추가
 
     const totalCourse = await Course.count({ where: { ...whereCondition } });
+    console.log("Total courses:", totalCourse);
 
     const courses = await Course.findAll({
       where: { ...whereCondition },
@@ -43,10 +47,8 @@ exports.getAllCourses = async (req, res) => {
       limit: limit ? parseInt(limit) : 5, // 조회 개수를 설정할 수 있음
       offset: offset ? parseInt(offset) : 0, // 조회 시작 위치를 설정할 수 있음
     });
-    // ***********************************************************
-    // include 로 조인된 결과 조회 해서 id 혹시나 불러오는게 있는지 확인 필요**
-    // console.log(courses);
-    // ***********************************************************
+    console.log("Fetched courses:", courses);
+
     const modifiedCourses = courses.map((course) => {
       const imagePath = path.join(
         __dirname,
@@ -54,14 +56,12 @@ exports.getAllCourses = async (req, res) => {
         `${course.id}_0.jpg`
       );
       let imageUrl = null;
-      const backend = process.env.BACKEND || "http://localhost:3001";
       if (fs.existsSync(imagePath)) {
-        imageUrl = path.join(backend,`courseImage/${course.id}/${course.id}_0.jpg`); // 이미지 파일의 URL 제공
+        imageUrl = `courseImage/${course.id}/${course.id}_0.jpg`; // 이미지 파일의 URL 제공
       }
       return {
         ...course.get(),
         id: course.id,
-        // F_User_id: course.F_User_id,
         F_Course_Location: course.F_Course_Location,
         userName: course.Writer.nickname,
         location: course.Location.name,
@@ -70,7 +70,7 @@ exports.getAllCourses = async (req, res) => {
       };
     });
 
-    console.log(modifiedCourses);
+    console.log("Modified courses:", modifiedCourses);
 
     res.json({ modifiedCourses: modifiedCourses, total: totalCourse });
   } catch (err) {
@@ -82,9 +82,10 @@ exports.getAllCourses = async (req, res) => {
 // 특정 코스 가져오기 (ID로 조회)
 // GET /course-api/:id
 exports.getCourseById = async (req, res) => {
+  console.log("getCourseById called");
   const { id } = req.params;
+  console.log("Course ID:", id);
   try {
-    // const modifiedid = fermatDecode(id);
     const course = await Course.findByPk(id, {
       include: [
         { model: User, as: "Writer", attributes: ["nickname"] },
@@ -110,6 +111,7 @@ exports.getCourseById = async (req, res) => {
     });
 
     if (!course) {
+      console.log("Course not found");
       return res.status(404).json({ error: "Course not found" });
     }
 
@@ -125,14 +127,10 @@ exports.getCourseById = async (req, res) => {
 
     const modifiedCourse = {
       ...course.get(),
-      // id: course.id,
-      // F_User_id: course.F_User_id,
-      // F_Course_Location: course.F_Course_Location,
       nickname: course.Writer.nickname,
       location: course.Location.name,
       spot: course.Spot.map((spot) => ({
         ...spot.get(),
-        // id: spot.id,
       })),
       comment: course.CourseComment.map((comment) => ({
         ...comment.get(),
@@ -140,6 +138,8 @@ exports.getCourseById = async (req, res) => {
       })),
       imageUrl,
     };
+
+    console.log("Modified course:", modifiedCourse);
 
     res.json(modifiedCourse);
   } catch (err) {
@@ -151,15 +151,17 @@ exports.getCourseById = async (req, res) => {
 // 코스 생성하기
 // POST /course-api
 exports.createCourse = async (req, res) => {
+  console.log("createCourse called");
   const { F_User_id, Course_title, Course_content, F_Course_Location, spots } =
     req.body;
+  console.log("Request body:", req.body);
   const transaction = await db.sequelize.transaction(); // 트랜잭션 시작
   try {
     const newCourse = await Course.create(
       {
         F_User_id,
-        Course_title,
-        Course_content,
+        title: Course_title,
+        content: Course_content,
         F_Course_Location,
         meanStartPoint: 0,
         countStarPoint: 0,
@@ -168,19 +170,15 @@ exports.createCourse = async (req, res) => {
       { transaction }
     );
 
-    await newCourse.addSpots(
-      spots.map((spot) => spot),
-      { transaction }
-    );
+    await newCourse.addSpots(spots, { transaction });
 
     await transaction.commit(); // 트랜잭션 커밋
 
     const modifiedCourse = {
       ...newCourse.get(),
-      // id: newCourse.id,
-      // F_User_id: newCourse.F_User_id,
-      // F_Course_Location: newCourse.F_Course_Location,
     };
+
+    console.log("Created course:", modifiedCourse);
 
     res.status(201).json(modifiedCourse);
   } catch (err) {
@@ -193,12 +191,16 @@ exports.createCourse = async (req, res) => {
 // 이미지 업로드
 // POST /course-api/image?courseId=123
 exports.uploadImage = async (req, res) => {
+  console.log("uploadImage called");
   const { courseId } = req.query;
   const files = req.files;
+  console.log("Course ID:", courseId);
+  console.log("Files:", files);
   try {
     const modifiedid = courseId;
     const course = await Course.findByPk(modifiedid);
     if (!course) {
+      console.log("Course not found");
       return res.status(404).json({ error: "Course not found" });
     }
 
@@ -213,6 +215,8 @@ exports.uploadImage = async (req, res) => {
       fs.writeFileSync(imagePath, file.buffer); // 파일 저장
     });
 
+    console.log("Images uploaded successfully");
+
     res.json({ message: "Images uploaded successfully" });
   } catch (err) {
     console.error("Error uploading images:", err);
@@ -223,6 +227,7 @@ exports.uploadImage = async (req, res) => {
 // 코스 수정하기
 // PUT /course-api/:id
 exports.updateCourse = async (req, res) => {
+  console.log("updateCourse called");
   const { id } = req.params;
   const {
     Course_title,
@@ -231,12 +236,15 @@ exports.updateCourse = async (req, res) => {
     meanStartPoint,
     countStarPoint,
   } = req.body;
+  console.log("Course ID:", id);
+  console.log("Request body:", req.body);
   try {
     const modifiedid = id;
     const decodedLocation = F_Course_Location;
 
     const course = await Course.findByPk(modifiedid);
     if (!course) {
+      console.log("Course not found");
       return res.status(404).json({ error: "Course not found" });
     }
 
@@ -252,10 +260,9 @@ exports.updateCourse = async (req, res) => {
 
     const modifiedCourse = {
       ...course.get(),
-      // id: fermatIncode(course.id),
-      // F_User_id: fermatIncode(course.F_User_id),
-      // F_Course_Location: fermatIncode(course.F_Course_Location),
     };
+
+    console.log("Updated course:", modifiedCourse);
 
     res.json(modifiedCourse);
   } catch (err) {
@@ -266,14 +273,18 @@ exports.updateCourse = async (req, res) => {
 
 // PUT /course-api/startpoint-update/:id
 exports.updateCourse = async (req, res) => {
+  console.log("updateCourse (startpoint) called");
   const { id } = req.params;
   const { addStartPoint } = req.body;
+  console.log("Course ID:", id);
+  console.log("Request body:", req.body);
   try {
     const modifiedid = id;
     const decodedLocation = F_Course_Location;
 
     const course = await Course.findByPk(modifiedid);
     if (!course) {
+      console.log("Course not found");
       return res.status(404).json({ error: "Course not found" });
     }
 
@@ -288,29 +299,32 @@ exports.updateCourse = async (req, res) => {
 
     const modifiedCourse = {
       ...course.get(),
-      // id: fermatIncode(course.id),
-      // F_User_id: fermatIncode(course.F_User_id),
-      // F_Course_Location: fermatIncode(course.F_Course_Location),
     };
+
+    console.log("Updated course (startpoint):", modifiedCourse);
 
     res.json(modifiedCourse);
   } catch (err) {
-    console.error("Error updating course:", err);
+    console.error("Error updating course (startpoint):", err);
     res.status(500).json({ error: "Failed to update course" });
   }
 };
 
 // DELETE /course-api/:id
 exports.deleteCourse = async (req, res) => {
+  console.log("deleteCourse called");
   const { id } = req.params;
+  console.log("Course ID:", id);
   try {
     const modifiedid = id;
     const course = await Course.findByPk(modifiedid);
     if (!course) {
+      console.log("Course not found");
       return res.status(404).json({ error: "Course not found" });
     }
 
     await course.destroy({ cascade: true }); // 관련된 데이터도 삭제
+    console.log("Course deleted successfully");
     res.json({ message: "Course deleted successfully" });
   } catch (err) {
     console.error("Error deleting course:", err);
