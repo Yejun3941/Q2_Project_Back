@@ -267,8 +267,8 @@ exports.updateCourse = async (req, res) => {
   }
 };
 
-// PUT /course-api/starpoint-update/:id
-exports.updateCourse = async (req, res) => {
+// PUT /course-api/starpoint/:id
+exports.updateStarPoint = async (req, res) => {
   console.log("updateCourse (StarPoint) called");
   const { id } = req.params;
   const { addStarPoint } = req.body;

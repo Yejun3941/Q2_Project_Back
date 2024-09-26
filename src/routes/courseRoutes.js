@@ -24,6 +24,8 @@ router.post(
 // 코스 업데이트하기 (ID로 조회)
 router.put("/:id", courseController.updateCourse);
 
+router.put('/starpoint/:id', courseController.updateStarPoint);
+
 // 코스 삭제하기 (ID로 조회)
 router.delete("/:id", courseController.deleteCourse);
 
