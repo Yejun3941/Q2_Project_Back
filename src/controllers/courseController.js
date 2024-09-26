@@ -98,7 +98,7 @@ exports.getCourseById = async (req, res) => {
         },
         {
           model: CourseComment,
-          as: "CourseComment",
+          as: "CourseComments",
           attributes: [
             "comment_content",
             "starPoint",
@@ -109,7 +109,7 @@ exports.getCourseById = async (req, res) => {
         },
       ],
     });
-
+    console.log("This is RDS finish")
     if (!course) {
       console.log("Course not found");
       return res.status(404).json({ error: "Course not found" });
@@ -128,7 +128,7 @@ exports.getCourseById = async (req, res) => {
       nickname: course.Writer.nickname,
       location: course.Location.name,
       spots: course.Spots,
-      comment: course.CourseComment.map((comment) => ({
+      comment: course.CourseComments.map((comment) => ({
         ...comment.get(),
         nickname: comment.User.nickname,
       })),
