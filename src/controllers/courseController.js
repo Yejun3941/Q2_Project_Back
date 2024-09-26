@@ -285,12 +285,8 @@ exports.updateStarPoint = async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
     console.log("Before Course StarPoint:", course.meanStarPoint, course.countStarPoint);
-    course.meanStarPoint =
-      course.meanStarPoint !== undefined
-        ? addStarPoint + course.meanStarPoint
-        : addStarPoint;
-    course.countStarPoint =
-      countStarPoint !== undefined ? course.countStarPoint + 1 : 1;
+    course.meanStarPoint = (addStarPoint + course.meanStarPoint*course.countStarPoint) / (course.countStarPoint+1);
+    course.countStarPoint = course.countStarPoint + 1
     console.log("After Course StarPoint:", course.meanStarPoint, course.countStarPoint);
     await course.save();
 
