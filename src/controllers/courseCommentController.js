@@ -1,37 +1,43 @@
-const { CourseComment } = require("../models"); // CourseComment 모델 불러오기
+const { CourseComment, User, Course } = require("../models"); // CourseComment 모델 불러오기
 const { decode2queryData } = require("../services/decodingService");
 
 // 모든 코멘트 가져오기
-// GET /course-comments?data={sortBy=starPoint&user=121323&course=12345(encoded)}
+// GET /comment-api?data={sortBy=starPoint&user=121323&course=12345(encoded)}
 // sort by starPoint / createdAt
 // where user / course
 exports.getAllComments = async (req, res) => {
   try {
-    const { sortBy, user, course, limit, offset } = decode2queryData(
+    console.log("Start get all comments");
+    const { sortBy, user, course } = decode2queryData(
       req.query.data
     ); // URL 쿼리에서 정렬 정보 추출
+
+    console.log("get query value ", course);
 
     const whereCondition = {}; // 조회 조건을 담을 객체 생성
     // user ? (whereCondition.F_User_id = fermatDecode(user)) : null; // 유저 정보가 있을 경우 조회 조건에 추가
     user ? (whereCondition.F_User_id = user) : null; // 유저 정보가 있을 경우 조회 조건에 추가
     course ? (whereCondition.F_Course_id = course) : null; // 코스 정보가 있을 경우 조회 조건에 추가
-    const orderCondition = []; // 정렬 조건을 담을 객체 생성
-    sortBy ? orderCondition.push([sortBy, "ASC"]) : null; // 정렬 정보가 있을 경우 정렬
-    sortBy ? orderCondition.push([(secondSortBy = "createdAt"), "ASC"]) : null; // 정렬 정보가 있을 경우 Second 정렬 기준
+    // const orderCondition = []; // 정렬 조건을 담을 객체 생성
+    // sortBy ? orderCondition.push([sortBy, "ASC"]) : null; // 정렬 정보가 있을 경우 정렬
+    // sortBy ? orderCondition.push([(secondSortBy = "createdAt"), "ASC"]) : null; // 정렬 정보가 있을 경우 Second 정렬 기준
 
     const totalComment = await CourseComment.count({
       where: {
         ...whereCondition,
       },
     });
+    console.log("totalComment", totalComment);
     const comments = await CourseComment.findAll({
       where: {
         ...whereCondition,
       },
-      order: orderCondition,
-      limit: limit ? parseInt(limit) : 10,
-      offset: offset ? parseInt(offset) : 0,
+      incluede: [
+        { model: User, as: "Writer", attributes: ["nickname"] },
+      ],
+      // order: orderCondition
     }); // 데이터베이스에서 모든 코멘트를 조회
+    console.log("Finish comments", comments);
 
     const modifiedComments = comments.map((comment) => ({
       ...comment.get(),
@@ -70,13 +76,14 @@ exports.getCommentById = async (req, res) => {
 };
 
 // 새 코멘트 생성하기
-// POST /course-comments
+// POST /comment-api
 exports.createComment = async (req, res) => {
-  const { F_Course_id, F_User_id, comment_content, starPoint } = req.body; // 요청 바디에서 필요한 데이터 추출
   try {
+    console.log("Start create comment");
+    const { F_Course_id, F_User_id, comment_content, starPoint } = req.body; // 요청 바디에서 필요한 데이터 추출
     // F_Course_id = F_Course_id;
     // F_User_id = F_User_id;
-
+    console.log("query value ", F_Course_id, F_User_id, comment_content, starPoint);
     const newComment = await CourseComment.create({
       F_Course_id,
       F_User_id,
@@ -84,6 +91,7 @@ exports.createComment = async (req, res) => {
       starPoint,
       createdAt: new Date(), // 생성 시간은 현재 시간으로 설정
     });
+    console.log("Finish create comment", newComment);
     const modifiedComment = {
       ...newComment.get(),
       // id: comment.id,

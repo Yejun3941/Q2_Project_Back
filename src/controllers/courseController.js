@@ -279,25 +279,26 @@ exports.updateCourse = async (req, res) => {
     // const decodedLocation = F_Course_Location;
 
     const course = await Course.findByPk(modifiedid);
+    console.log("In CourseContorller, update Course starpoint:", course);
     if (!course) {
       console.log("Course not found");
       return res.status(404).json({ error: "Course not found" });
     }
-
+    console.log("Before Course StarPoint:", course.meanStarPoint, course.countStarPoint);
     course.meanStarPoint =
       course.meanStarPoint !== undefined
         ? addStarPoint + course.meanStarPoint
         : addStarPoint;
     course.countStarPoint =
       countStarPoint !== undefined ? course.countStarPoint + 1 : 1;
-
+    console.log("After Course StarPoint:", course.meanStarPoint, course.countStarPoint);
     await course.save();
 
     const modifiedCourse = {
       ...course.get(),
     };
 
-    console.log("Updated course (starpoint):", modifiedCourse);
+    console.log("Finish Updated course (starpoint):", modifiedCourse);
 
     res.json(modifiedCourse);
   } catch (err) {
