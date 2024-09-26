@@ -92,7 +92,7 @@ exports.getCourseById = async (req, res) => {
         { model: Location, as: "Location", attributes: ["name"] },
         {
           model: Spot,
-          as: "Spot",
+          as: "Spots",
           attributes: ["id", "Spot_Name", "Category"],
           through: { model: Link },
         },
@@ -115,31 +115,27 @@ exports.getCourseById = async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    const imagePath = path.join(
-      __dirname,
-      `../assets/courseImage/${course.id}`,
-      `${course.id}_${index}.jpg`
-    );
-    let imageUrl = null;
-    if (fs.existsSync(imagePath)) {
-      imageUrl = `/assets/courseImage/${course.id}.jpg`; // 이미지 URL 제공
+    const imageDir = path.join(__dirname, `../assets/courseImage/${course.id}`);
+    let imageUrlList = [];
+
+    if (fs.existsSync(imageDir)) {
+      const files = fs.readdirSync(imageDir);
+      imageUrlList = files.map(file => `courseImage/${course.id}/${file}`);
     }
 
     const modifiedCourse = {
       ...course.get(),
       nickname: course.Writer.nickname,
       location: course.Location.name,
-      spot: course.Spot.map((spot) => ({
-        ...spot.get(),
-      })),
+      spots: course.Spots,
       comment: course.CourseComment.map((comment) => ({
         ...comment.get(),
-        nickName: comment.User.nickname,
+        nickname: comment.User.nickname,
       })),
-      imageUrl,
+      imageUrlList,
     };
 
-    console.log("Modified course:", modifiedCourse);
+    console.log("This is Modified course in getCourse from ID:", modifiedCourse);
 
     res.json(modifiedCourse);
   } catch (err) {
@@ -163,7 +159,7 @@ exports.createCourse = async (req, res) => {
         title: Course_title,
         content: Course_content,
         F_Course_Location,
-        meanStartPoint: 0,
+        meanStarPoint: 0,
         countStarPoint: 0,
         createAt: new Date(),
       },
@@ -233,7 +229,7 @@ exports.updateCourse = async (req, res) => {
     Course_title,
     Course_content,
     F_Course_Location,
-    meanStartPoint,
+    meanStarPoint,
     countStarPoint,
   } = req.body;
   console.log("Course ID:", id);
@@ -251,8 +247,8 @@ exports.updateCourse = async (req, res) => {
     course.Course_title = Course_title || course.Course_title;
     course.Course_content = Course_content || course.Course_content;
     course.F_Course_Location = decodedLocation || course.F_Course_Location;
-    course.meanStartPoint =
-      meanStartPoint !== undefined ? meanStartPoint : course.meanStartPoint;
+    course.meanStarPoint =
+      meanStarPoint !== undefined ? meanStarPoint : course.meanStarPoint;
     course.countStarPoint =
       countStarPoint !== undefined ? countStarPoint : course.countStarPoint;
 
@@ -271,16 +267,16 @@ exports.updateCourse = async (req, res) => {
   }
 };
 
-// PUT /course-api/startpoint-update/:id
+// PUT /course-api/starpoint-update/:id
 exports.updateCourse = async (req, res) => {
-  console.log("updateCourse (startpoint) called");
+  console.log("updateCourse (StarPoint) called");
   const { id } = req.params;
-  const { addStartPoint } = req.body;
+  const { addStarPoint } = req.body;
   console.log("Course ID:", id);
   console.log("Request body:", req.body);
   try {
     const modifiedid = id;
-    const decodedLocation = F_Course_Location;
+    // const decodedLocation = F_Course_Location;
 
     const course = await Course.findByPk(modifiedid);
     if (!course) {
@@ -288,10 +284,10 @@ exports.updateCourse = async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    course.meanStartPoint =
-      meanStartPoint !== undefined
-        ? addStartPoint + course.meanStartPoint
-        : addStartPoint;
+    course.meanStarPoint =
+      course.meanStarPoint !== undefined
+        ? addStarPoint + course.meanStarPoint
+        : addStarPoint;
     course.countStarPoint =
       countStarPoint !== undefined ? course.countStarPoint + 1 : 1;
 
@@ -301,11 +297,11 @@ exports.updateCourse = async (req, res) => {
       ...course.get(),
     };
 
-    console.log("Updated course (startpoint):", modifiedCourse);
+    console.log("Updated course (starpoint):", modifiedCourse);
 
     res.json(modifiedCourse);
   } catch (err) {
-    console.error("Error updating course (startpoint):", err);
+    console.error("Error updating course (StarPoint):", err);
     res.status(500).json({ error: "Failed to update course" });
   }
 };

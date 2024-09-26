@@ -14,7 +14,7 @@ class Course extends Sequelize.Model {
           allowNull: true,
           unique: true,
         },
-        meanStartPoint: {
+        meanStarPoint: {
           type: Sequelize.DOUBLE,
           allowNull: false,
           unique: false,
@@ -38,7 +38,7 @@ class Course extends Sequelize.Model {
         collate: "utf8mb4_general_ci",
         indexes: [
           {
-            fields: ["meanStartPoint"],
+            fields: ["meanStarPoint"],
           },
         ],
       }

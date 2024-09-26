@@ -21,7 +21,7 @@ exports.getAllLinks = async (req, res) => {
         {
           model: Course,
           as: "Courses",
-          attributes: ["Course_title", "meanStartPoint"],
+          attributes: ["Course_title", "meanStarPoint"],
         },
       ],
     });
@@ -32,7 +32,7 @@ exports.getAllLinks = async (req, res) => {
       // spot: fermatIncode(link.spot),
       spot_name: link.Spots.Spot_name,
       course_title: link.Courses.Course_title,
-      meanStartPoint: link.Courses.meanStartPoint,
+      meanStarPoint: link.Courses.meanStarPoint,
     }));
 
     res.json(modifiedLinks); // 조회된 링크들을 JSON 형태로 응답

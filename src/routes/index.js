@@ -17,9 +17,9 @@ router.use("/spot-api", spotRoutes);
 
 router.use("/comment-api", commentRoutes);
 
-router.use("/user-api", user);
+// router.use("/user-api", user);
 
-router.use("/link-api", link);
+// router.use("/link-api", link);
 
 router.use("/location-api", location);
 
