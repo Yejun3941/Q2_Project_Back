@@ -1,120 +1,170 @@
-# DatePeek
+# DATEPEEK: 지역 기반 데이트 스팟 공유 서비스
 
-## Front : https://github.com/sooooooool/q2_project_front 
+**DATEPEEK**는 사용자가 직접 데이트 코스를 만들고 공유할 수 있는 플랫폼입니다. 다양한 데이트 경험을 공유하며 데이트 계획의 스트레스를 최소화하는 것이 목표입니다.
 
-## 개발 목적
-- 데이트를 할 때, 어디를 가야할까? 남들은 어떻게 데이트를 할까? 내 데이트 코스 어떻게 짜야 성공적인 데이트를 할수 있을까? 라는 생각에서 시작된 데이트 코스 공유 및 제공
+## 팀 구성 및 개발 일정
 
-## 용도
+- **팀원**: 프론트엔드 1명 (sooooooool), 백엔드 1명 (yeyeyey), 기획 3명  
+- **개발 기간**: 2024.08.02 ~ 2024.09.30
+- **Front**: [프론트엔드 GitHub 저장소](https://github.com/sooooooool/q2_project_front)
 
+## 서비스 목표
 
-## Project Folder Architecture
-```md
+DATEPEEK는 사용자의 데이트 경험을 공유하여, 데이트 계획에 드는 고민과 스트레스를 줄여주는 서비스입니다.
+
+## 주요 기능
+
+### 1. **지역 선택**
+   사용자가 원하는 데이트 핫플 지역을 선택할 수 있습니다.
+   ![지역 선택 이미지](https://github.com/user-attachments/assets/29320a1f-aeef-475c-b4d1-be87deecb199)
+
+### 2. **데이트 코스 확인**
+   다른 사용자가 작성한 데이트 코스를 확인할 수 있으며, 관련된 정보를 제공합니다.
+   ![데이트 코스 확인 이미지](https://github.com/user-attachments/assets/c9c6a4a2-9540-433a-90ea-75c67c08a844)
+
+### 3. **코스 상세 페이지**
+   코스의 이미지, 정보, 경로 등을 확인하고 댓글로 다른 사용자와 소통할 수 있습니다.
+   ![코스 상세 페이지 이미지](https://github.com/user-attachments/assets/15074051-69d2-4e03-b0a9-0e7459d70282)
+
+### 4. **사용자 평가**
+   데이트 코스에 대한 별점 평가와 댓글을 작성할 수 있습니다.
+   ![사용자 평가 이미지](https://github.com/user-attachments/assets/108480d5-e760-4d4d-baa9-0785f6098049)
+
+### 5. **코스 만들기**
+   사진 업로드, 제목 작성, 관련 스팟 선택을 통해 나만의 데이트 코스를 만들 수 있습니다.
+   ![코스 만들기 이미지](https://github.com/user-attachments/assets/448b3c7c-ba9b-40c9-9bbe-4e5fef09cc69)
+
+## 기술 스택
+
+- **Node.js**: 서버 사이드 JavaScript 런타임
+- **Express.js**: 웹 프레임워크
+- **Sequelize**: ORM(Object-Relational Mapping) 라이브러리
+- **MySQL**: 관계형 데이터베이스
+- **Passport**: OAuth 인증을 위한 라이브러리
+- **REST API**: 데이터 통신 방식
+
+## 프로젝트 구조
+
+### 폴더 구조
+```bash
 src/
-├── controllers/
-│   ├── authController.js
-│   ├── spotController.js
-│   ├── courseController.js
-│   └── userController.js
-├── middlewares/
-│   ├── authMiddleware.js
-│   ├── errorMiddleware.js
-├── models/
-│   ├── User.js
-│   ├── Location.js
-│   ├── Spot.js
-│   ├── Course.js
-│   ├── FavoritSpot.js
-│   ├── FavoritCourse.js
-│   ├── Link.js
-│   └── CourseComment.js
-├── passport/               
-│   ├── index.js            
-│   ├── kakaoStrategy.js    
-│   └── naverStrategy.js    
-├── routes/
-│   ├── authRoutes.js
-│   ├── spotRoutes.js
-│   ├── courseRoutes.js
-│   ├── userRoutes.js
-│   └── index.js
-├── services/
-│   ├── authService.js
-│   ├── spotService.js
-│   ├── courseService.js
-│   └── userService.js
-└── app.js
+├── assets/           # Static files (이미지, 스타일 등)
+├── controllers/      # 비즈니스 로직 처리 및 API 요청 핸들링
+├── middlewares/      # 인증, 에러 핸들링 미들웨어
+├── models/           # Sequelize ORM 모델 정의
+├── passport/         # OAuth 소셜 로그인 설정
+├── routes/           # API 엔드포인트 라우팅
+├── services/         # 비즈니스 로직 처리
+└── app.js            # 서버 초기화 및 설정 파일
 ```
-## 폴더 및 파일 설명
 
-### `controllers/`
-애플리케이션의 주요 비즈니스 로직을 처리하는 컨트롤러 모음입니다. 각 컨트롤러는 특정 도메인에 대한 요청을 처리합니다.
-
-- **`authController.js`**: 사용자 인증 관련 로직을 처리하는 컨트롤러입니다. 로그인, 회원가입, 로그아웃 등의 기능을 담당합니다.
-- **`spotController.js`**: 스팟(장소) 관련 요청을 처리하는 컨트롤러입니다. 스팟 목록 조회, 스팟 상세 조회 등의 기능을 포함합니다.
-- **`courseController.js`**: 코스 관련 요청을 처리하는 컨트롤러입니다. 코스 목록 조회, 코스 상세 조회 및 생성, 수정, 삭제 기능을 담당합니다.
-- **`userController.js`**: 사용자 정보 및 관리와 관련된 로직을 처리하는 컨트롤러입니다. 사용자 정보 조회 및 수정, 계정 삭제 등의 기능을 포함합니다.
-
-### `middlewares/`
-요청 처리 과정에서 특정 기능을 수행하는 미들웨어 모음입니다.
-
-- **`authMiddleware.js`**: 사용자 인증이 필요한 요청을 보호하는 미들웨어입니다. 요청에 인증 토큰이 있는지 확인하고, 유효한 토큰인지 검사합니다.
-- **`errorMiddleware.js`**: 애플리케이션 내에서 발생하는 에러를 처리하는 미들웨어입니다. 에러를 적절히 처리하여 클라이언트에게 응답을 반환합니다.
-
-### `models/`
-데이터베이스와 상호작용하는 모델 정의 모음입니다. 각 모델은 데이터베이스의 테이블에 해당하며, 데이터 구조를 정의합니다.
-
-- **`User.js`**: 사용자 정보를 저장하는 모델입니다. 사용자의 프로필, 인증 정보 등을 포함합니다.
-- **`Location.js`**: 위치 정보를 저장하는 모델입니다. 장소의 좌표, 주소 등의 정보를 포함합니다.
-- **`Spot.js`**: 스팟(장소) 정보를 저장하는 모델입니다. 스팟의 이름, 설명, 위치 정보 등을 포함합니다.
-- **`Course.js`**: 코스 정보를 저장하는 모델입니다. 여러 스팟을 묶어 코스를 구성하며, 코스의 이름, 설명 등을 포함합니다.
-- **`FavoritSpot.js`**: 사용자가 즐겨찾기한 스팟 정보를 저장하는 모델입니다.
-- **`FavoritCourse.js`**: 사용자가 즐겨찾기한 코스 정보를 저장하는 모델입니다.
-- **`Link.js`**: 스팟이나 코스 간의 링크 정보를 저장하는 모델입니다. 코스에 포함된 스팟 간의 관계를 정의합니다.
-- **`CourseComment.js`**: 코스에 대한 댓글 정보를 저장하는 모델입니다.
-
-### `passport/`
-소셜 로그인과 관련된 로직을 정의하는 폴더입니다. Passport.js를 사용하여 소셜 로그인 전략을 설정합니다.
-
-- **`index.js`**: Passport.js 초기화 및 설정 파일입니다. 여러 전략들을 통합하고 초기화합니다.
-- **`kakaoStrategy.js`**: 카카오 소셜 로그인 전략을 정의하는 파일입니다.
-- **`naverStrategy.js`**: 네이버 소셜 로그인 전략을 정의하는 파일입니다.
-
-### `routes/`
-각 요청 URL과 해당 컨트롤러를 매핑하는 라우트 정의 모음입니다.
-
-- **`authRoutes.js`**: 인증 관련 API 엔드포인트를 정의하는 라우트 파일입니다.
-- **`spotRoutes.js`**: 스팟 관련 API 엔드포인트를 정의하는 라우트 파일입니다.
-- **`courseRoutes.js`**: 코스 관련 API 엔드포인트를 정의하는 라우트 파일입니다.
-- **`userRoutes.js`**: 사용자 관련 API 엔드포인트를 정의하는 라우트 파일입니다.
-- **`index.js`**: 모든 라우트를 통합하고 관리하는 파일입니다.
-
-### `services/`
-비즈니스 로직을 처리하고 컨트롤러와 모델 사이에서 데이터 처리를 담당하는 서비스 모음입니다.
-
-- **`authService.js`**: 인증 관련 비즈니스 로직을 처리하는 서비스입니다. 사용자 로그인, 회원가입, 토큰 관리 등을 담당합니다.
-- **`spotService.js`**: 스팟 관련 비즈니스 로직을 처리하는 서비스입니다. 스팟 데이터를 처리하고 컨트롤러에 전달합니다.
-- **`courseService.js`**: 코스 관련 비즈니스 로직을 처리하는 서비스입니다. 코스 데이터를 생성, 수정, 삭제하는 로직을 포함합니다.
-- **`userService.js`**: 사용자 관련 비즈니스 로직을 처리하는 서비스입니다. 사용자 정보 조회 및 수정 로직을 담당합니다.
-
-### 최상위 파일들
-- **`app.js`**: 애플리케이션의 진입점 파일로, 서버를 초기화하고 필요한 미들웨어, 라우트 등을 설정합니다. Express 서버가 이 파일에서 시작됩니다.
-
----
+### 주요 폴더 및 파일 설명
+- **`controllers/`**: 각 도메인에 대한 비즈니스 로직을 처리하며, API 요청에 대한 응답을 반환합니다.
+- **`middlewares/`**: 인증, 에러 핸들링 등 요청 과정에서 수행되는 미들웨어를 포함합니다.
+- **`models/`**: 데이터베이스의 테이블을 정의하며, Sequelize 모델을 사용해 데이터베이스와 상호작용합니다.
+- **`passport/`**: 소셜 로그인과 관련된 로직을 정의하며, Passport.js를 사용하여 소셜 로그인 전략을 설정합니다.
+- **`routes/`**: 클라이언트 요청 URL을 처리할 라우터를 정의합니다.
+- **`services/`**: 데이터 처리 및 비즈니스 로직을 수행하는 서비스 레이어입니다.
+- **`app.js`**: 애플리케이션의 진입점으로 서버를 초기화하고 필요한 미들웨어, 라우터를 설정합니다.
 
 ## 설치 및 실행
 
-### 1. 패키지 설치
-프로젝트 루트 디렉토리에서 다음 명령어를 치세요.
-- npx create-react-app . --template typescript
-- npm i / npm start
+### 1. 프로젝트 클론 및 디렉토리 이동
+```bash
+git clone https://github.com/Yejun3941/Q2_Project_Back.git
+cd backend
+```
 
-## Learn More
+### 2. 의존성 설치
+```bash
+npm install
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 3. 환경 변수 설정
+```bash
+touch .env
+```
+`.env` 파일에 데이터베이스 정보, 시크릿, OAuth 정보 등을 설정합니다.
 
-##  GIT 규칙 - commit, branch
+### 4. 서버 실행
+```bash
+npm start
+```
+또는 PM2를 사용하여 서버 실행
+```bash
+pm2 start app.js --name "datepeek-server"
+```
+
+## API 문서
+
+### 코스 등록 API
+
+- **Endpoint**: `POST /course-api`
+- **설명**: 새로운 데이트 코스를 등록합니다.
+- **Request Body**:
+  ```json
+  {
+    "F_User_id": 1,
+    "Course_title": "성수 데이트 코스",
+    "Course_content": "성수에서 즐길 수 있는 3곳의 핫플!",
+    "F_Course_Location": 1,
+    "spots": [101, 102, 103]
+  }
+  ```
+- **Response** (성공 시):
+  ```json
+  {
+    "success": true,
+    "message": "Course created successfully",
+    "data": {
+      "id": 1,
+      "F_User_id": 1,
+      "Course_title": "성수 데이트 코스",
+      "Course_content": "성수에서 즐길 수 있는 3곳의 핫플!",
+      "F_Course_Location": 1,
+      "createdAt": "2024-09-10T12:34:56.789Z",
+      "updatedAt": "2024-09-10T12:34:56.789Z"
+    }
+  }
+  ```
+- **Response** (실패 시):
+  ```json
+  {
+    "success": false,
+    "message": "Failed to create course",
+    "error": "Validation error"
+  }
+  ```
+
+### 스팟 목록 조회 API
+
+- **Endpoint**: `GET /spot-api`
+- **설명**: 사용 가능한 스팟 목록을 조회합니다.
+- **Query Parameters**:
+  - `page`: 현재 페이지 (선택)
+  - `pageSize`: 페이지당 항목 수 (선택)
+
+- **Response** (성공 시):
+  ```json
+  {
+    "success": true,
+    "data": {
+      "spots": [
+        {
+          "id": 101,
+          "Spot_Name": "성수 카페거리"
+        },
+        {
+          "id": 102,
+          "Spot_Name": "성수 연무장길"
+        }
+      ],
+      "total": 2
+    }
+  }
+  ```
+
+## GIT 규칙 - Commit 및 Branch 전략
 
 ### Commit 규칙
 
@@ -122,14 +172,6 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 - **`주제`**: 변경 사항을 요약합니다 (50자 이내).
 - **`본문`**: 선택 사항으로, 커밋에 대한 추가 설명이나 이유, 세부사항을 포함할 수 있습니다. 본문은 한 줄 비워둔 뒤 작성하며, 각 줄은 72자를 넘지 않도록 합니다.
 - **`이슈 번호`**: 관련된 이슈 번호를 명시합니다 (있을 경우).
-```
-feat: Add user authentication
-
-Implemented JWT-based authentication for the user login system.
-This includes token generation, verification, and middleware setup.
-
-Closes #42
-```
 
 ### 커밋 메시지 타입(태그)
 
@@ -172,3 +214,17 @@ Closes #42
 모든 팀원은 이 규칙을 준수하여 일관된 Git 커밋 메시지를 작성해야 하며, 이를 통해 프로젝트 관리와 협업이 원활하게 진행될 수 있도록 노력합니다. 규칙을 준수하지 않을 경우, 코드 리뷰에서 지적되어 수정 요청을 받을 수 있습니다.
 
 ### 이 규약은 팀 프로젝트의 성공적인 진행을 위해 만들어졌으며, 모든 팀원은 이를 숙지하고 준수해야 합니다.
+
+## 팀 프로젝트 개발자 회고 및 인사이트
+
+### 1. 시간 제약과 설계
+- **설계 부족**: 기획이 미완성된 상태에서 시작
+- **개선점**: 초기 기획 완성 후 작업 시작 필요
+
+### 2. API 통합의 중요성
+- **예상보다 긴 통합 작업**: 프론트와 백엔드 연동에 시간 소모
+- **개선점**: API 명세서 작성 및 충분한 통합 작업 시간 확보
+
+### 3. 기술적 인사이트: 데이터베이스 무결성과 효율성
+- **무결성과 효율성 균형**: 성능 최적화 위해 평균 별점 저장 방식 도입
+- **개선점**: 불필요한 연산 방지를 통한 성능 향상
